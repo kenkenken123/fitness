@@ -1,4 +1,5 @@
 using Furion;
+using fitness.EntityFramework.Core;
 
 var builder = WebApplication.CreateBuilder(args).Inject();
 
@@ -7,6 +8,11 @@ var builder = WebApplication.CreateBuilder(args).Inject();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers().AddInject();
+builder.Services.AddDatabaseAccessor(options =>
+{
+    options.AddDbPool<DefaultDbContext>();
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

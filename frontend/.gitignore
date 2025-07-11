@@ -23,12 +23,5 @@ yarn-debug.log*
 yarn-error.log*
 
 # .NET Core
-/backend/bin/
-/backend/obj/
-
-# Node.js
-/frontend/node_modules/
-/frontend/dist/
-/frontend/build/
-/frontend/public/
-/frontend/src/
+[Bb]in/
+[Oo]bj/
