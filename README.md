@@ -12,7 +12,7 @@
 ## 技术栈
 
 - **后端:** .NET Core, Furion, MySQL
-- **前端:** React, Material-UI (MUI)
+- **前端:** Next.js (React), Material-UI (MUI)
 
 ## 如何运行
 
@@ -25,4 +25,4 @@
 
 1. 进入 `frontend` 目录。
 2. 运行 `npm install` 安装依赖。
-3. 运行 `npm start`。
+3. 运行 `npm run dev`。

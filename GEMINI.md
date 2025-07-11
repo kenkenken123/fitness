@@ -5,7 +5,7 @@
 ## 技术栈
 
 - **后端:** .NET Core, Furion, MySQL, BCrypt.Net-Next
-- **前端:** React, Material-UI (MUI), React Router, Axios
+- **前端:** Next.js (React), Material-UI (MUI), Axios
 
 ## 架构
 
@@ -43,13 +43,13 @@
     - **语言:** 界面文本全部中文化。
     - **布局:** 使用卡片、悬浮按钮等现代 App 设计元素。
 - **认证流程:**
-    - `LoginPage`: 提供游客自动登录功能。
+    - `/`: 提供游客自动登录功能。
     - `AuthContext`: 全局管理用户登录状态和用户信息。
 - **主导航 (BottomNav):**
-    - `HomePage`: 显示欢迎信息。
-    - `TrainingPage`: 展示历史训练记录列表。
-    - `LocationsPage`: 训练地址的增删改查。
-    - `ProfilePage`: 提供登出和关于页面。
+    - `/home`: 显示欢迎信息。
+    - `/training`: 展示历史训练记录列表。
+    - `/locations`: 训练地址的增删改查。
+    - `/profile`: 提供登出和关于页面。
 
 ## 项目功能
 
