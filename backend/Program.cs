@@ -10,7 +10,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddControllers().AddInject();
 builder.Services.AddDatabaseAccessor(options =>
 {
-    options.AddDbPool<DefaultDbContext>();
+    options.AddDbPool<DefaultDbContext>(DbProvider.MySql, "DefaultConnection");
 });
 
 var app = builder.Build();

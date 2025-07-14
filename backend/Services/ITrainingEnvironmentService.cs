@@ -1,4 +1,4 @@
-using fitness.DTOs;
+using backend.DTOs;
 using fitness.Entities;
 using System.Collections.Generic;
 

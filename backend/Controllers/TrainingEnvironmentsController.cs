@@ -1,4 +1,4 @@
-using fitness.DTOs;
+using backend.DTOs;
 using fitness.Services;
 using Microsoft.AspNetCore.Mvc;
 

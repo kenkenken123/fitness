@@ -38,7 +38,13 @@ namespace fitness.Services
         {
             var user = _userRepository.FirstOrDefault(u => u.Username == userDto.Username);
 
-            if (user == null || !BCrypt.Net.BCrypt.Verify(userDto.Password, user.PasswordHash))
+            if (user == null)
+            {
+                throw Oops.Oh("Invalid username or password.");
+            }
+
+            var passwordMatch = BCrypt.Net.BCrypt.Verify(userDto.Password, user.PasswordHash);
+            if (!passwordMatch)
             {
                 throw Oops.Oh("Invalid username or password.");
             }

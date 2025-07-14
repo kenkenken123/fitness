@@ -1,4 +1,4 @@
-using fitness.DTOs;
+using backend.DTOs;
 using fitness.Entities;
 using Furion.DatabaseAccessor;
 using System.Linq;
@@ -20,21 +20,33 @@ namespace fitness.Services
             _envEquipRepository = envEquipRepository;
         }
 
-        public IEnumerable<TrainingEnvironment> GetEnvironments()
+        public IEnumerable<object> GetEnvironments()
         {
-            return _envRepository.AsQueryable().ToList();
+            return _envRepository.AsQueryable()
+                .Include(te => te.EnvironmentEquipments)
+                .ThenInclude(ee => ee.Equipment)
+                .ToList();
         }
 
         public void CreateEnvironment(TrainingEnvironmentDto envDto)
         {
             var environment = new TrainingEnvironment { Name = envDto.Name };
 
-            foreach (var equipId in envDto.EquipmentIds)
-            {
-                environment.EnvironmentEquipments.Add(new EnvironmentEquipment { EquipmentId = equipId });
-            }
-
+            // First, save the environment to get an ID
             _envRepository.Insert(environment);
+
+            // Then, associate the equipment
+            if (envDto.EquipmentIds != null && envDto.EquipmentIds.Any())
+            {
+                foreach (var equipId in envDto.EquipmentIds)
+                {
+                    _envEquipRepository.Insert(new EnvironmentEquipment 
+                    { 
+                        TrainingEnvironmentId = environment.Id, 
+                        EquipmentId = equipId 
+                    });
+                }
+            }
         }
 
         public void UpdateEnvironment(int id, TrainingEnvironmentDto envDto)
