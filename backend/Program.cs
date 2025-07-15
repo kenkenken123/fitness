@@ -1,5 +1,6 @@
 using Furion;
 using fitness.EntityFramework.Core;
+using Furion.DatabaseAccessor;
 
 var builder = WebApplication.CreateBuilder(args).Inject();
 
@@ -10,7 +11,9 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddControllers().AddInject();
 builder.Services.AddDatabaseAccessor(options =>
 {
-    options.AddDbPool<DefaultDbContext>(DbProvider.MySql, "DefaultConnection");
+    // 添加数据库连接池
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    options.AddDbPool<DefaultDbContext>(DbProvider.MySql,connectionMetadata:connectionString);
 });
 
 var app = builder.Build();
@@ -23,7 +26,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseMiddleware<backend.Middlewares.ExceptionHandlingMiddleware>();
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 

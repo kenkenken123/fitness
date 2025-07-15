@@ -18,7 +18,7 @@
 - **Activity:** 活动/运动项目
 - **WorkoutLog:** 锻炼日志 (关联多个 WorkoutSet)
 - **TrainingEnvironment:** 训练环境
-- **Equipment:** 器材
+- **Equipment:** 器材 (包含 `Name`, `Type`, `Weight`)
 - **EnvironmentEquipment:** 环境与器材的关联 (多对多)
 - **WorkoutSet:** 训练组详情
 
@@ -28,12 +28,16 @@
     - `POST /register`: 用户注册
     - `POST /login`: 用户登录
 - **TrainingEnvironments:**
-    - `GET /`: 获取所有环境
+    - `GET /user/{userId}`: 获取指定用户的所有环境
+    - `GET /{id}`: 获取单个环境的详细信息
     - `POST /`: 创建新环境 (可关联设备)
     - `PUT /{id}`: 更新环境
     - `DELETE /{id}`: 删除环境
 - **Equipments:**
     - `GET /`: 获取所有设备列表
+    - `POST /`: 创建新设备
+    - `PUT /{id}`: 更新设备
+    - `DELETE /{id}`: 删除设备
 - **WorkoutLogs:**
     - `GET /user/{userId}`: 获取指定用户的训练日志
     - `POST /`: 创建新的训练日志 (包含多个训练组)
@@ -50,11 +54,22 @@
 - **主导航 (BottomNav):**
     - `/home`: 显示欢迎信息。
     - `/training`: 展示历史训练记录列表。
-    - `/locations`: 训练环境的增删改查。
+    - `/locations`: 训练环境列表。
+    - `/locations/[id]`: 单个训练环境的管理页面，可管理该环境下的器材。
     - `/profile`: 提供登出和关于页面。
+- **核心组件:**
+    - `AddEnvironmentDialog.tsx`: 添加新环境的弹窗。
+    - `EquipmentDialog.tsx`: 添加/编辑器材的弹窗。
+
 
 ## 项目功能
 
 - **训练环境管理:**
-    - 用户可以创建、查看、删除自己的训练环境 (例如："家庭健身房", "公司健身房")。
+    - 用户可以创建、查看、删除自己的训练环境。
     - 创建环境时，可以从一个预设的设备列表中，选择该环境所拥有的设备。
+- **器材管理:**
+    - 在指定的环境管理页面中，用户可以对该环境的器材进行增、删、改、查。
+    - 器材信息包括名称、类型和重量。
+
+## 备注
+- **编码需要添加中文注释**

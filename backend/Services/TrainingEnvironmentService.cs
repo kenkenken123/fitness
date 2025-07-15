@@ -5,6 +5,7 @@ using System.Linq;
 using Furion.FriendlyException;
 using Furion.DependencyInjection;
 using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 
 namespace fitness.Services
 {
@@ -20,17 +21,11 @@ namespace fitness.Services
             _envEquipRepository = envEquipRepository;
         }
 
-        public IEnumerable<object> GetEnvironments()
-        {
-            return _envRepository.AsQueryable()
-                .Include(te => te.EnvironmentEquipments)
-                .ThenInclude(ee => ee.Equipment)
-                .ToList();
-        }
+        
 
         public void CreateEnvironment(TrainingEnvironmentDto envDto)
         {
-            var environment = new TrainingEnvironment { Name = envDto.Name };
+            var environment = new TrainingEnvironment { Name = envDto.Name, UserId = envDto.UserId };
 
             // First, save the environment to get an ID
             _envRepository.Insert(environment);
@@ -75,6 +70,20 @@ namespace fitness.Services
             }
 
             _envRepository.Delete(environment);
+        }
+        public IEnumerable<TrainingEnvironmentDto> GetAllForUser(int userId)
+        {
+            return _envRepository.AsQueryable()
+                .Where(e => e.UserId == userId)
+                .Include(e => e.EnvironmentEquipments)
+                .Select(e => new TrainingEnvironmentDto
+                {
+                    Id = e.Id,
+                    Name = e.Name,
+                    UserId = e.UserId,
+                    EquipmentIds = e.EnvironmentEquipments.Select(ee => ee.EquipmentId).ToList()
+                })
+                .ToList();
         }
     }
 }

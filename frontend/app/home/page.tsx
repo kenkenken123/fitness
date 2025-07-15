@@ -9,7 +9,9 @@ import { useAuth } from "../../src/context/AuthContext" // 导入 useAuth
 import { useRouter } from "next/navigation"
 
 const Home = () => {
-  const { user, isLoading } = useAuth(); // 使用 useAuth 钩子获取 user 和 isLoading
+  const auth = useAuth(); // 先获取 auth
+  const user = auth?.user;
+  const isLoading = auth?.isLoading;
   const router = useRouter();
 
   // 如果正在加载，显示加载状态

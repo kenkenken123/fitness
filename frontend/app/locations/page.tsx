@@ -1,42 +1,60 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { MapPin, Plus, Edit, Trash2, Dumbbell } from "lucide-react"
 import { AddEnvironmentDialog } from '@/components/AddEnvironmentDialog';
+import { getTrainingEnvironmentsByUserId } from '@/src/api/trainingEnvironments';
 import axios from 'axios';
 
 // Define the types for our data
 interface TrainingEnvironment {
   id: number;
   name: string;
-  environmentEquipments: { equipment: { name: string } }[];
+  equipmentIds: number[];
+}
+
+interface Equipment {
+  id: number;
+  name: string;
 }
 
 const LocationsPage = () => {
   const [environments, setEnvironments] = useState<TrainingEnvironment[]>([]);
+  const [equipments, setEquipments] = useState<Equipment[]>([]);
   const [isAddDialogOpen, setAddDialogOpen] = useState(false);
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+  
 
   const fetchEnvironments = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/trainingEnvironments`);
-      setEnvironments(response.data);
+      const data = await getTrainingEnvironmentsByUserId();
+      setEnvironments(data);
     } catch (error) {
       console.error("Failed to fetch environments", error);
     }
   };
 
+  const fetchEquipments = async () => {
+    try {
+      const data = await axios.get('/api/equipments');
+      setEquipments(data.data);
+    } catch (error) {
+      console.error("Failed to fetch equipments", error);
+    }
+  };
+
   useEffect(() => {
     fetchEnvironments();
+    fetchEquipments();
   }, []);
 
   const handleDelete = async (id: number) => {
     try {
-      await axios.delete(`${API_URL}/api/trainingEnvironments/${id}`);
+      await axios.delete(`/api/trainingEnvironments/${id}`);
       fetchEnvironments(); // Refresh the list
     } catch (error) {
       console.error("Failed to delete environment", error);
@@ -62,38 +80,38 @@ const LocationsPage = () => {
         {/* Environments List */}
         <div className="space-y-4 mb-6">
           {environments.map((env) => (
-            <Card key={env.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3 flex-1">
-                    <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-teal-500 rounded-full flex items-center justify-center">
-                      <Dumbbell className="w-6 h-6 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold">{env.name}</h3>
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {env.environmentEquipments.map(ee => (
-                           <Badge key={ee.equipment.name} variant="secondary">{ee.equipment.name}</Badge>
-                        ))}
+            <Link href={`/locations/${env.id}`} key={env.id}>
+              <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-teal-500 rounded-full flex items-center justify-center">
+                        <Dumbbell className="w-6 h-6 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold">{env.name}</h3>
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {env.equipmentIds.map(equipmentId => {
+                            const equipment = equipments.find(e => e.id === equipmentId);
+                            return equipment ? <Badge key={equipment.id} variant="secondary">{equipment.name}</Badge> : null;
+                          })}
+                        </div>
                       </div>
                     </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => { e.preventDefault(); handleDelete(env.id); }}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex gap-2">
-                    {/* <Button variant="ghost" size="sm" onClick={() => { /* Implement edit logic */ }}>
-                      <Edit className="w-4 h-4" />
-                    </Button> */}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDelete(env.id)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </Link>
           ))}
         </div>
 

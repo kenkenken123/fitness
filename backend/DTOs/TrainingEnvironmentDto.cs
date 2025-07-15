@@ -12,6 +12,8 @@ namespace backend.DTOs
         [StringLength(100)]
         public string Name { get; set; } = string.Empty;
 
+        public int UserId { get; set; }
+
         public List<int> EquipmentIds { get; set; } = new List<int>();
     }
 }
