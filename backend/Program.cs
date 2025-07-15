@@ -1,6 +1,7 @@
 using Furion;
 using fitness.EntityFramework.Core;
 using Furion.DatabaseAccessor;
+using fitness.Services;
 
 var builder = WebApplication.CreateBuilder(args).Inject();
 

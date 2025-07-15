@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import axios from 'axios';
 
 interface Equipment {
@@ -14,6 +15,29 @@ interface Equipment {
   type: string;
   weight: number | null;
 }
+
+const EQUIPMENT_TYPES = [
+  '哑铃',
+  '杠铃',
+  '跑步机',
+  '椭圆机',
+  '划船机',
+  '健身车',
+  '力量器械',
+  '史密斯机',
+  '龙门架',
+  '卧推架',
+  '深蹲架',
+  '引体向上器',
+  '腹轮机',
+  '壶铃',
+  '药球',
+  '战绳',
+  '弹力带',
+  '泡沫轴',
+  '瑜伽垫',
+  '平衡球'
+];
 
 interface EquipmentDialogProps {
   open: boolean;
@@ -75,20 +99,47 @@ export const EquipmentDialog: React.FC<EquipmentDialogProps> = ({ open, onOpenCh
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div>
-            <Label htmlFor="name">名称</Label>
-            <Input id="name" value={name} onChange={e => setName(e.target.value)} />
+            <Label htmlFor="name">器材名称</Label>
+            <Input 
+              id="name" 
+              value={name} 
+              onChange={e => setName(e.target.value)} 
+              placeholder="请输入器材名称"
+              className="mt-1"
+            />
           </div>
           <div>
-            <Label htmlFor="type">类型</Label>
-            <Input id="type" value={type} onChange={e => setType(e.target.value)} />
+            <Label htmlFor="type">器材类型</Label>
+            <Select value={type} onValueChange={setType}>
+              <SelectTrigger className="mt-1">
+                <SelectValue placeholder="请选择器材类型" />
+              </SelectTrigger>
+              <SelectContent>
+                {EQUIPMENT_TYPES.map((equipmentType) => (
+                  <SelectItem key={equipmentType} value={equipmentType}>
+                    {equipmentType}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div>
             <Label htmlFor="weight">重量 (kg)</Label>
-            <Input id="weight" type="number" value={weight} onChange={e => setWeight(e.target.value)} />
+            <Input 
+              id="weight" 
+              type="number" 
+              value={weight} 
+              onChange={e => setWeight(e.target.value)} 
+              placeholder="可选：输入重量"
+              className="mt-1"
+            />
           </div>
         </div>
-        <DialogFooter>
-          <Button onClick={handleSubmit}>保存</Button>
+        <DialogFooter className="gap-2">
+          <Button variant="outline" onClick={() => onOpenChange(false)}>取消</Button>
+          <Button onClick={handleSubmit} className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white">
+            {equipment ? '更新' : '添加'}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -11,5 +11,6 @@ namespace fitness.Services
         void UpdateEnvironment(int id, TrainingEnvironmentDto envDto);
         void DeleteEnvironment(int id);
         IEnumerable<TrainingEnvironmentDto> GetAllForUser(int userId);
+        TrainingEnvironmentDto GetById(int id);
     }
 }

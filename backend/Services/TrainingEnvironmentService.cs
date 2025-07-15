@@ -85,5 +85,25 @@ namespace fitness.Services
                 })
                 .ToList();
         }
+
+        public TrainingEnvironmentDto GetById(int id)
+        {
+            var environment = _envRepository.AsQueryable()
+                .Include(e => e.EnvironmentEquipments)
+                .FirstOrDefault(e => e.Id == id);
+
+            if (environment == null)
+            {
+                return null;
+            }
+
+            return new TrainingEnvironmentDto
+            {
+                Id = environment.Id,
+                Name = environment.Name,
+                UserId = environment.UserId,
+                EquipmentIds = environment.EnvironmentEquipments.Select(ee => ee.EquipmentId).ToList()
+            };
+        }
     }
 }
