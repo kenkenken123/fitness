@@ -2,6 +2,7 @@ using Furion;
 using fitness.EntityFramework.Core;
 using Furion.DatabaseAccessor;
 using fitness.Services;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args).Inject();
 
@@ -9,7 +10,14 @@ var builder = WebApplication.CreateBuilder(args).Inject();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddControllers().AddInject();
+
+// ... (其他 using 语句)
+
+builder.Services.AddHttpClient();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+}).AddInject();
 builder.Services.AddDatabaseAccessor(options =>
 {
     // 添加数据库连接池

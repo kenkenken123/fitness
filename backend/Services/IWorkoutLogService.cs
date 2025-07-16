@@ -8,5 +8,6 @@ namespace fitness.Services
     {
         IEnumerable<WorkoutLog> GetWorkoutLogs(int userId);
         void CreateWorkoutLog(WorkoutLogDto logDto);
+        Task<WorkoutLog> GenerateWorkoutLogAsync(int trainingEnvironmentId, int userId);
     }
 }

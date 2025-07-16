@@ -10,39 +10,27 @@ namespace fitness.Entities
     public class WorkoutLog : IEntity
     {
         [Key]
-        // 日志主键ID
         public int Id { get; set; }
 
         [Required]
-        // 用户ID
         public int UserId { get; set; }
 
-        [Required]
-        // 活动ID
-        public int ActivityId { get; set; }
+        public string Name { get; set; } // AI生成的训练名称
 
         [Required]
-        // 开始时间
         public DateTime StartTime { get; set; }
 
-        // 结束时间
         public DateTime? EndTime { get; set; }
 
-        // 锻炼时长（分钟）
-        public double? DurationMinutes { get; set; }
+        public int? EstimatedDuration { get; set; } // AI预估时长
 
-        // 消耗的卡路里
-        public double? CaloriesBurned { get; set; }
+        public int? EstimatedCalories { get; set; } // AI预估卡路里
+
+        public bool IsCompleted { get; set; } = false;
 
         [ForeignKey(nameof(UserId))]
-        // 导航属性：用户
         public virtual User? User { get; set; }
 
-        [ForeignKey(nameof(ActivityId))]
-        // 导航属性：活动
-        public virtual Activity? Activity { get; set; }
-
-        // 导航属性：锻炼组集合
         public virtual ICollection<WorkoutSet> WorkoutSets { get; set; } = new List<WorkoutSet>();
     }
 }

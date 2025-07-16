@@ -25,23 +25,17 @@ namespace fitness.Services
 
         public void CreateEnvironment(TrainingEnvironmentDto envDto)
         {
-            var environment = new TrainingEnvironment { Name = envDto.Name, UserId = envDto.UserId };
-
-            // First, save the environment to get an ID
-            _envRepository.Insert(environment);
-
-            // Then, associate the equipment
-            if (envDto.EquipmentIds != null && envDto.EquipmentIds.Any())
+            var environment = new TrainingEnvironment
             {
-                foreach (var equipId in envDto.EquipmentIds)
+                Name = envDto.Name,
+                UserId = envDto.UserId,
+                EnvironmentEquipments = envDto.EquipmentIds?.Select(equipId => new EnvironmentEquipment
                 {
-                    _envEquipRepository.Insert(new EnvironmentEquipment 
-                    { 
-                        TrainingEnvironmentId = environment.Id, 
-                        EquipmentId = equipId 
-                    });
-                }
-            }
+                    EquipmentId = equipId
+                }).ToList() ?? new List<EnvironmentEquipment>()
+            };
+
+            _envRepository.Insert(environment);
         }
 
         public void UpdateEnvironment(int id, TrainingEnvironmentDto envDto)

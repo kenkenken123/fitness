@@ -40,7 +40,7 @@
     - `DELETE /{id}`: 删除设备
 - **WorkoutLogs:**
     - `GET /user/{userId}`: 获取指定用户的训练日志
-    - `POST /`: 创建新的训练日志 (包含多个训练组)
+    - `POST /workoutlogs/generate`: 根据训练环境ID生成AI训练计划
 
 ## 前端页面设计 (移动端优先)
 

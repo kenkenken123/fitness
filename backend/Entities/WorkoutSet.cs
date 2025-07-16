@@ -8,27 +8,22 @@ namespace fitness.Entities
     public class WorkoutSet : IEntity
     {
         [Key]
-        // 主键ID
         public int Id { get; set; }
 
         [Required]
-        // 所属锻炼日志ID
         public int WorkoutLogId { get; set; }
 
         [Required]
         [StringLength(100)]
-        // 动作名称
         public string ActivityName { get; set; } = string.Empty;
 
-        // 重量（kg）
-        public double Weight { get; set; }
-        // 组数
+        public decimal Weight { get; set; }
         public int Sets { get; set; }
-        // 次数
         public int Reps { get; set; }
 
+        public bool IsCompleted { get; set; } = false;
+
         [ForeignKey(nameof(WorkoutLogId))]
-        // 导航属性：所属锻炼日志
         public virtual WorkoutLog? WorkoutLog { get; set; }
     }
 }

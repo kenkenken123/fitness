@@ -1,6 +1,7 @@
 using fitness.DTOs;
 using fitness.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace fitness.Controllers
 {
@@ -28,5 +29,18 @@ namespace fitness.Controllers
             _workoutLogService.CreateWorkoutLog(logDto);
             return Ok();
         }
+
+        [HttpPost("generate")]
+        public async Task<IActionResult> GenerateWorkoutLog([FromBody] GenerateWorkoutLogRequest request)
+        {
+            var workoutLog = await _workoutLogService.GenerateWorkoutLogAsync(request.TrainingEnvironmentId, request.UserId);
+            return Ok(workoutLog);
+        }
+    }
+
+    public class GenerateWorkoutLogRequest
+    {
+        public int TrainingEnvironmentId { get; set; }
+        public int UserId { get; set; }
     }
 }
