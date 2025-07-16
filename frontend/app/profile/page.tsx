@@ -1,52 +1,83 @@
-"use client"
+'use client'
+
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { Settings, Lock, Info, LogOut, Trophy, Target, TrendingUp, ChevronRight, Edit } from "lucide-react"
-
-import { useAuth } from "../../src/context/AuthContext" // 导入 useAuth
-
+import { useAuth } from "../../src/context/AuthContext"
 import { useRouter } from "next/navigation"
+import axios from "axios"
 
-const Profile = () => {
-  const { user, logout, isLoading } = useAuth(); // 使用 useAuth 钩子获取 user, logout 和 isLoading
+// 定义从后端获取的数据类型
+interface UserProfile {
+  username: string;
+  email: string;
+  joinDate: string;
+  avatar: string | null;
+  stats: {
+    totalWorkouts: number;
+    totalCalories: number;
+    currentStreak: number;
+    longestStreak: number;
+    favoriteWorkout: string;
+    totalHours: number;
+  };
+  achievements: {
+    id: number;
+    name: string;
+    description: string;
+    earned: boolean;
+  }[];
+}
+
+const ProfilePage = () => {
+  const { user, logout } = useAuth();
   const router = useRouter();
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // 如果正在加载，显示加载状态
+  useEffect(() => {
+    if (!user) {
+      router.push("/");
+      return;
+    }
+
+    const fetchProfile = async () => {
+      try {
+        setIsLoading(true);
+        const response = await axios.get<UserProfile>(`/api/users/${user.id}/profile`);
+        setProfile(response.data);
+        setError(null);
+      } catch (err) {
+        console.error("Failed to fetch profile data:", err);
+        setError("无法加载个人数据，请稍后再试。");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, [user, router]);
+
+  const handleLogout = () => {
+    logout();
+    router.push("/");
+  };
+
   if (isLoading) {
-    return <div>Loading user data...</div>;
+    return <div className="flex justify-center items-center h-screen">正在加载您的个人数据...</div>;
   }
 
-  // 如果加载完成但用户为 null，则重定向到登录页面
-  if (!user) {
-    router.push("/"); // 重定向到登录页面
-    return null; // 或者显示一个提示信息
+  if (error) {
+    return <div className="flex justify-center items-center h-screen text-red-500">{error}</div>;
   }
 
-  // 使用从 AuthContext 获取的 user 数据
-  const displayUser = {
-    username: user.username || "健身达人",
-    email: user.email || "fitness@example.com",
-    joinDate: user.joinDate || "2024-01-01",
-    avatar: user.avatar || null,
+  if (!profile) {
+    return null; // 或者显示一个未找到配置文件的消息
   }
-
-  const userStats = {
-    totalWorkouts: 45,
-    totalCalories: 12500,
-    currentStreak: 7,
-    longestStreak: 15,
-    favoriteWorkout: "力量训练",
-    totalHours: 67,
-  }
-
-  const achievements = [
-    { id: 1, name: "新手上路", description: "完成第一次训练", earned: true },
-    { id: 2, name: "坚持不懈", description: "连续训练7天", earned: true },
-    { id: 3, name: "卡路里杀手", description: "单次训练消耗500+卡路里", earned: false },
-    { id: 4, name: "月度冠军", description: "单月训练20次", earned: false },
-  ]
 
   const menuItems = [
     { icon: Edit, label: "编辑资料", action: () => console.log("编辑资料") },
@@ -54,50 +85,45 @@ const Profile = () => {
     { icon: Target, label: "训练目标", action: () => console.log("训练目标") },
     { icon: Settings, label: "应用设置", action: () => console.log("应用设置") },
     { icon: Info, label: "关于应用", action: () => console.log("关于应用") },
-  ]
-
-  const handleLogout = () => {
-    logout(); // 调用 AuthContext 中的 logout 方法
-    console.log("退出登录");
-  }
+  ];
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
-      {/* 头部用户信息 */}
+      {/* Header with user info */}
       <div className="bg-gradient-to-r from-purple-500 to-pink-600 text-white p-6 rounded-b-3xl">
         <div className="flex items-center gap-4 mb-6">
           <Avatar className="w-20 h-20 border-4 border-white/20">
-            <AvatarImage src={displayUser.avatar || "/placeholder.svg"} />
+            <AvatarImage src={profile.avatar || "/placeholder.svg"} />
             <AvatarFallback className="bg-white/20 text-white text-xl font-bold">
-              {displayUser.username.charAt(0)}
+              {profile.username.charAt(0)}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1">
-            <h1 className="text-2xl font-bold">{displayUser.username}</h1>
-            <p className="text-purple-100">{displayUser.email}</p>
-            <p className="text-purple-100 text-sm mt-1">加入于 {new Date(displayUser.joinDate).toLocaleDateString("zh-CN")}</p>
+            <h1 className="text-2xl font-bold">{profile.username}</h1>
+            <p className="text-purple-100">{profile.email}</p>
+            <p className="text-purple-100 text-sm mt-1">加入于 {new Date(profile.joinDate).toLocaleDateString("zh-CN")}</p>
           </div>
         </div>
 
-        {/* 用户统计 */}
+        {/* User stats */}
         <div className="grid grid-cols-3 gap-4">
           <div className="text-center">
-            <div className="text-2xl font-bold">{userStats.totalWorkouts}</div>
+            <div className="text-2xl font-bold">{profile.stats.totalWorkouts}</div>
             <div className="text-xs text-purple-100">总训练</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold">{userStats.currentStreak}</div>
+            <div className="text-2xl font-bold">{profile.stats.currentStreak}</div>
             <div className="text-xs text-purple-100">连续天数</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold">{Math.round(userStats.totalHours)}h</div>
+            <div className="text-2xl font-bold">{Math.round(profile.stats.totalHours)}h</div>
             <div className="text-xs text-purple-100">总时长</div>
           </div>
         </div>
       </div>
 
       <div className="p-6 space-y-6">
-        {/* 详细统计 */}
+        {/* Detailed stats */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -108,22 +134,22 @@ const Profile = () => {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="text-center p-3 bg-blue-50 rounded-lg">
-                <div className="text-2xl font-bold text-blue-600">{userStats.totalCalories}</div>
+                <div className="text-2xl font-bold text-blue-600">{profile.stats.totalCalories}</div>
                 <div className="text-sm text-blue-600">总消耗卡路里</div>
               </div>
               <div className="text-center p-3 bg-green-50 rounded-lg">
-                <div className="text-2xl font-bold text-green-600">{userStats.longestStreak}</div>
+                <div className="text-2xl font-bold text-green-600">{profile.stats.longestStreak}</div>
                 <div className="text-sm text-green-600">最长连续天数</div>
               </div>
             </div>
             <div className="text-center p-3 bg-purple-50 rounded-lg">
               <div className="text-lg font-semibold text-purple-600">最爱训练</div>
-              <div className="text-sm text-purple-600">{userStats.favoriteWorkout}</div>
+              <div className="text-sm text-purple-600">{profile.stats.favoriteWorkout}</div>
             </div>
           </CardContent>
         </Card>
 
-        {/* 成就系统 */}
+        {/* Achievements */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -133,7 +159,7 @@ const Profile = () => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-3">
-              {achievements.map((achievement) => (
+              {profile.achievements.map((achievement) => (
                 <div
                   key={achievement.id}
                   className={`p-3 rounded-lg border-2 ${
@@ -155,11 +181,11 @@ const Profile = () => {
           </CardContent>
         </Card>
 
-        {/* 菜单选项 */}
+        {/* Menu options */}
         <Card>
           <CardContent className="p-0">
             {menuItems.map((item, index) => {
-              const IconComponent = item.icon
+              const IconComponent = item.icon;
               return (
                 <div key={index}>
                   <button
@@ -174,19 +200,19 @@ const Profile = () => {
                   </button>
                   {index < menuItems.length - 1 && <Separator />}
                 </div>
-              )
+              );
             })}
           </CardContent>
         </Card>
 
-        {/* 退出登录 */}
+        {/* Logout button */}
         <Button variant="destructive" onClick={handleLogout} className="w-full h-12 text-base font-medium">
           <LogOut className="w-5 h-5 mr-2" />
           退出登录
         </Button>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Profile
+export default ProfilePage;

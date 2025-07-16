@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace fitness.DTOs
+namespace backend.DTOs
 {
     public class UserLoginDto
     {

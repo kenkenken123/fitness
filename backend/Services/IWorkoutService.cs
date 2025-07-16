@@ -1,9 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using backend.DTOs;
 
-namespace fitness.Services
+namespace backend.Services
 {
     public interface IWorkoutService
     {
@@ -52,15 +49,6 @@ namespace fitness.Services
         public int Calories { get; set; }
         public string Type { get; set; } = string.Empty;
         public string? EnvironmentName { get; set; }
-    }
-
-    public class AchievementDto
-    {
-        public int Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string Icon { get; set; } = string.Empty;
-        public string Type { get; set; } = string.Empty;
-        public DateTime EarnedDate { get; set; }
     }
 
     public class UserStatisticsDto

@@ -8,8 +8,9 @@ using Furion.DatabaseAccessor;
 using Furion.FriendlyException;
 using Furion.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
+using backend.Services;
 
-namespace fitness.Services
+namespace backend.Services
 {
     [Injection(Named = "WorkoutService")]
     public class WorkoutService : IWorkoutService, ITransient

@@ -1,16 +1,10 @@
-using fitness.DTOs;
 using fitness.Entities;
 using Furion.DatabaseAccessor;
-using System;
 using Furion.DependencyInjection;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
-using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using backend.DTOs;
 
 namespace fitness.Services
 {
@@ -63,7 +57,7 @@ namespace fitness.Services
             _workoutLogRepository.Insert(workoutLog);
         }
 
-        public async Task<WorkoutLog> GenerateWorkoutLogAsync(int trainingEnvironmentId, int userId)
+        public async Task<WorkoutLog> GenerateWorkoutLogAsync(int trainingEnvironmentId, int userId, string trainingFocus = null)
         {
             // 1. 根据环境ID获取器材列表
             var equipmentIds = _environmentEquipmentRepository
@@ -77,7 +71,7 @@ namespace fitness.Services
                 .ToList();
 
             // 2. 构建Prompt
-            var prompt = BuildPrompt(equipmentNames);
+            var prompt = BuildPrompt(equipmentNames, trainingFocus);
 
             // 3. 调用阿里云百练大模型API
             var apiKey = _configuration["BailianApi:ApiKey"];
@@ -115,17 +109,18 @@ namespace fitness.Services
 
 
             // 4. 解析AI响应并创建WorkoutLog
-            var workoutLog = ParseAiResponseAndCreateLog(jsonResponse, userId);
+            var workoutLog = ParseAiResponseAndCreateLog(jsonResponse, userId, trainingFocus);
             
             await _workoutLogRepository.InsertAsync(workoutLog);
 
             return workoutLog;
         }
 
-        private string BuildPrompt(List<string> equipmentNames)
+        private string BuildPrompt(List<string> equipmentNames, string trainingFocus = null)
         {
             var equipmentList = string.Join(", ", equipmentNames);
-            return $@"你是一个专业的健身教练。请根据以下可用器材，为我生成一份详细的全身力量训练计划。
+            var focusText = string.IsNullOrEmpty(trainingFocus) ? "全身力量训练" : trainingFocus;
+            return $@"你是一个专业的健身教练。请根据以下可用器材，为我生成一份详细的{focusText}训练计划。
 可用器材: [{equipmentList}]
 
 请严格按照以下JSON格式返回，不要添加任何额外的解释或Markdown标记。
@@ -151,7 +146,7 @@ namespace fitness.Services
 }}确保 `estimatedDuration`, `estimatedCalories`, `sets` (组数), 和 `reps` (次数) 字段的值都是整数, `weight` 字段的值是小数。";
         }
 
-        private WorkoutLog ParseAiResponseAndCreateLog(string jsonResponse, int userId)
+        private WorkoutLog ParseAiResponseAndCreateLog(string jsonResponse, int userId, string trainingFocus = null)
         {
             var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var aiPlan = JsonSerializer.Deserialize<AiWorkoutPlanDto>(jsonResponse, options);
@@ -176,6 +171,30 @@ namespace fitness.Services
             };
 
             return workoutLog;
+        }
+
+        public void UpdateWorkoutSetCompletion(int setId, bool isCompleted)
+        {
+            var workoutSet = _workoutLogRepository.Context.Set<WorkoutSet>().Find(setId);
+            if (workoutSet != null)
+            {
+                workoutSet.IsCompleted = isCompleted;
+                _workoutLogRepository.Context.SaveChanges();
+            }
+        }
+
+        public void UpdateWorkoutLogCompletion(int logId, bool isCompleted)
+        {
+            var workoutLog = _workoutLogRepository.Find(logId);
+            if (workoutLog != null)
+            {
+                workoutLog.IsCompleted = isCompleted;
+                if (isCompleted && workoutLog.EndTime == default)
+                {
+                    workoutLog.EndTime = DateTime.UtcNow;
+                }
+                _workoutLogRepository.Update(workoutLog);
+            }
         }
     }
 }

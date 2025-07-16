@@ -1,6 +1,4 @@
-using System.Collections.Generic;
-
-namespace fitness.DTOs
+namespace backend.DTOs
 {
     public class AiWorkoutPlanDto
     {

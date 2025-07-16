@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace fitness.DTOs
+namespace backend.DTOs
 {
     public class WorkoutLogDto
     {

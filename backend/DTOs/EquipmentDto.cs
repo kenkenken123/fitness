@@ -1,5 +1,4 @@
 
-// backend/DTOs/EquipmentDto.cs
 using System.ComponentModel.DataAnnotations;
 
 namespace backend.DTOs

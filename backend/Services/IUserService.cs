@@ -1,4 +1,4 @@
-using fitness.DTOs;
+using backend.DTOs;
 using fitness.Entities;
 
 namespace fitness.Services
@@ -7,5 +7,6 @@ namespace fitness.Services
     {
         void Register(UserRegisterDto userDto);
         User Login(UserLoginDto userDto);
+        Task<UserProfileDto> GetUserProfileAsync(int userId);
     }
 }

@@ -1,4 +1,4 @@
-namespace fitness.DTOs
+namespace backend.DTOs
 {
     public class AiWorkoutSetDto
     {

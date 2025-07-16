@@ -62,7 +62,15 @@ export const EquipmentDialog: React.FC<EquipmentDialogProps> = ({ open, onOpenCh
       setType('');
       setWeight('');
     }
-  }, [equipment]);
+  }, [equipment, open]); // 依赖 open 确保每次打开都重置
+
+  // 当类型改变时，如果是新增状态，则自动填充名称
+  const handleTypeChange = (newType: string) => {
+    setType(newType);
+    if (!equipment) {
+      setName(newType);
+    }
+  };
 
   const handleSubmit = async () => {
     const equipmentData = {
@@ -73,19 +81,24 @@ export const EquipmentDialog: React.FC<EquipmentDialogProps> = ({ open, onOpenCh
 
     try {
       if (equipment) {
+        // 更新现有器材
         await axios.put(`/api/equipments/${equipment.id}`, equipmentData);
       } else {
+        // 创建新器材并关联到环境
         const response = await axios.post('/api/equipments', equipmentData);
-        // Now, we need to associate this new equipment with the environment
         const environmentResponse = await axios.get(`/api/trainingEnvironments/${environmentId}`);
         const currentEquipmentIds = environmentResponse.data.equipmentIds;
         await axios.put(`/api/trainingEnvironments/${environmentId}`, { 
             ...environmentResponse.data, 
             equipmentIds: [...currentEquipmentIds, response.data.id] 
         });
+        // 成功添加后清空表单，以便连续添加
+        setName('');
+        setType('');
+        setWeight('');
       }
-      onSuccess();
-      onOpenChange(false);
+      onSuccess(); // 调用回调函数刷新列表
+      onOpenChange(false); // 关闭对话框
     } catch (error) {
       console.error('Failed to save equipment', error);
     }
@@ -99,18 +112,8 @@ export const EquipmentDialog: React.FC<EquipmentDialogProps> = ({ open, onOpenCh
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div>
-            <Label htmlFor="name">器材名称</Label>
-            <Input 
-              id="name" 
-              value={name} 
-              onChange={e => setName(e.target.value)} 
-              placeholder="请输入器材名称"
-              className="mt-1"
-            />
-          </div>
-          <div>
             <Label htmlFor="type">器材类型</Label>
-            <Select value={type} onValueChange={setType}>
+            <Select value={type} onValueChange={handleTypeChange}>
               <SelectTrigger className="mt-1">
                 <SelectValue placeholder="请选择器材类型" />
               </SelectTrigger>
@@ -122,6 +125,16 @@ export const EquipmentDialog: React.FC<EquipmentDialogProps> = ({ open, onOpenCh
                 ))}
               </SelectContent>
             </Select>
+          </div>
+          <div>
+            <Label htmlFor="name">器材名称</Label>
+            <Input 
+              id="name" 
+              value={name} 
+              onChange={e => setName(e.target.value)} 
+              placeholder="请输入器材名称"
+              className="mt-1"
+            />
           </div>
           <div>
             <Label htmlFor="weight">重量 (kg)</Label>

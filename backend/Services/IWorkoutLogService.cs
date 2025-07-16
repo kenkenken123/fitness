@@ -1,6 +1,5 @@
-using fitness.DTOs;
+using backend.DTOs;
 using fitness.Entities;
-using System.Collections.Generic;
 
 namespace fitness.Services
 {
@@ -8,6 +7,8 @@ namespace fitness.Services
     {
         IEnumerable<WorkoutLog> GetWorkoutLogs(int userId);
         void CreateWorkoutLog(WorkoutLogDto logDto);
-        Task<WorkoutLog> GenerateWorkoutLogAsync(int trainingEnvironmentId, int userId);
+        Task<WorkoutLog> GenerateWorkoutLogAsync(int trainingEnvironmentId, int userId, string trainingFocus = null);
+        void UpdateWorkoutSetCompletion(int setId, bool isCompleted);
+        void UpdateWorkoutLogCompletion(int logId, bool isCompleted);
     }
 }

@@ -1,8 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using backend.DTOs;
-using fitness.Services;
+using backend.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace fitness.Controllers
