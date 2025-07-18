@@ -56,6 +56,13 @@ namespace fitness.Controllers
             var workoutDays = _workoutLogService.GetWorkoutDaysInMonth(userId, year, month);
             return Ok(workoutDays);
         }
+
+        [HttpDelete("{logId}")]
+        public IActionResult DeleteWorkoutLog(int logId)
+        {
+            _workoutLogService.DeleteWorkoutLog(logId);
+            return Ok();
+        }
     }
 
     public class GenerateWorkoutLogRequest

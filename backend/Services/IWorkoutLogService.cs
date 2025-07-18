@@ -11,5 +11,6 @@ namespace fitness.Services
         void UpdateWorkoutSetCompletion(int setId, bool isCompleted);
         void UpdateWorkoutLogCompletion(int logId, bool isCompleted);
         List<int> GetWorkoutDaysInMonth(int userId, int year, int month);
+        void DeleteWorkoutLog(int logId);
     }
 }

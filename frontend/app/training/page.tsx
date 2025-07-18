@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Calendar, Flame, Clock, Dumbbell, Filter, Plus, CheckCircle, Radio, ChevronDown, ChevronUp, HelpCircle, Loader2, CalendarDays } from "lucide-react"
+import { Calendar, Flame, Clock, Dumbbell, Filter, Plus, CheckCircle, Radio, ChevronDown, ChevronUp, HelpCircle, Loader2, CalendarDays, Trash2 } from "lucide-react"
 import { getWorkoutLogsByUserId, updateWorkoutSetCompletion, updateWorkoutLogCompletion } from "@/src/api/workoutLogs"
 import { getTrainingEnvironmentsByUserId } from "@/src/api/trainingEnvironments"
 import { GenerateWorkoutDialog } from "@/components/GenerateWorkoutDialog"
@@ -53,6 +53,11 @@ const TrainingPage = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [workoutDays, setWorkoutDays] = useState<number[]>([]);
   const [isCalendarLoading, setIsCalendarLoading] = useState(false);
+  
+  // 删除相关状态
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: number; name: string } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   
   const { user, isLoading: isAuthLoading } = useAuth();
   const router = useRouter();
@@ -248,6 +253,36 @@ const TrainingPage = () => {
     fetchWorkoutDays(newDate.getFullYear(), newDate.getMonth() + 1);
   };
 
+  // 删除训练计划
+  const handleDeleteClick = (logId: number, logName: string) => {
+    setDeleteTarget({ id: logId, name: logName });
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget) return;
+    
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`/api/workoutlogs/${deleteTarget.id}`, {
+        method: 'DELETE',
+      });
+      
+      if (response.ok) {
+        // 从列表中移除被删除的训练计划
+        setLogs(prevLogs => prevLogs.filter(log => log.id !== deleteTarget.id));
+        setIsDeleteDialogOpen(false);
+        setDeleteTarget(null);
+      } else {
+        console.error('删除失败');
+      }
+    } catch (error) {
+      console.error('删除请求失败:', error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const toggleEnvironment = (envId: number) => {
     setExpandedEnvironments(prev => {
       const newSet = new Set(prev);
@@ -309,14 +344,24 @@ const TrainingPage = () => {
                       </div>
                     </div>
                   </div>
-                  <Button
-                    variant={log.isCompleted ? "default" : "secondary"}
-                    size="sm"
-                    onClick={() => handleLogCompletionToggle(log.id, !log.isCompleted)}
-                    className="cursor-pointer"
-                  >
-                    {log.isCompleted ? '已完成' : '标记完成'}
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant={log.isCompleted ? "default" : "secondary"}
+                      size="sm"
+                      onClick={() => handleLogCompletionToggle(log.id, !log.isCompleted)}
+                      className="cursor-pointer"
+                    >
+                      {log.isCompleted ? '已完成' : '标记完成'}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDeleteClick(log.id, log.name)}
+                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
@@ -580,6 +625,54 @@ const TrainingPage = () => {
                 <span>今天</span>
               </div>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* 删除确认弹框 */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Trash2 className="w-5 h-5 text-red-500" />
+              删除训练计划
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <p className="text-gray-600">
+              确定要删除训练计划 <span className="font-semibold">"{deleteTarget?.name}"</span> 吗？
+            </p>
+            <p className="text-sm text-gray-500">
+              此操作无法撤销，删除后将无法恢复。
+            </p>
+          </div>
+
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsDeleteDialogOpen(false);
+                setDeleteTarget(null);
+              }}
+              disabled={isDeleting}
+            >
+              取消
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteConfirm}
+              disabled={isDeleting}
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  删除中...
+                </>
+              ) : (
+                '确认删除'
+              )}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Loader2 } from "lucide-react"
 import { getTrainingEnvironmentsByUserId } from '@/src/api/trainingEnvironments'
 import axios from 'axios'
 
@@ -100,7 +101,14 @@ export const GenerateWorkoutDialog = ({ open, onOpenChange, onSuccess, userId }:
             取消
           </Button>
           <Button onClick={handleGenerate} disabled={!selectedEnvironment || isLoading}>
-            {isLoading ? '生成中...' : '生成计划'}
+            {isLoading ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                AI正在给你量身定制中...
+              </>
+            ) : (
+              '生成计划'
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

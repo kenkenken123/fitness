@@ -210,5 +210,14 @@ namespace fitness.Services
 
             return workoutDays;
         }
+
+        public void DeleteWorkoutLog(int logId)
+        {
+            var workoutLog = _workoutLogRepository.Find(logId);
+            if (workoutLog != null)
+            {
+                _workoutLogRepository.Delete(workoutLog);
+            }
+        }
     }
 }
