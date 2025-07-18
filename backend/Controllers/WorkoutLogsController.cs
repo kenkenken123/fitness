@@ -49,6 +49,13 @@ namespace fitness.Controllers
             _workoutLogService.UpdateWorkoutLogCompletion(logId, request.IsCompleted);
             return Ok();
         }
+
+        [HttpGet("user/{userId}/calendar/{year}/{month}")]
+        public IActionResult GetWorkoutDays(int userId, int year, int month)
+        {
+            var workoutDays = _workoutLogService.GetWorkoutDaysInMonth(userId, year, month);
+            return Ok(workoutDays);
+        }
     }
 
     public class GenerateWorkoutLogRequest

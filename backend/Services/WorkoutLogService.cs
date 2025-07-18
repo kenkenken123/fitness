@@ -191,12 +191,24 @@ namespace fitness.Services
             if (workoutLog != null)
             {
                 workoutLog.IsCompleted = isCompleted;
-                if (isCompleted && workoutLog.EndTime == default)
-                {
-                    workoutLog.EndTime = DateTime.UtcNow;
-                }
                 _workoutLogRepository.Update(workoutLog);
             }
+        }
+
+        public List<int> GetWorkoutDaysInMonth(int userId, int year, int month)
+        {
+            var startDate = new DateTime(year, month, 1);
+            var endDate = startDate.AddMonths(1).AddDays(-1);
+
+            var workoutDays = _workoutLogRepository.AsQueryable()
+                .Where(w => w.UserId == userId && 
+                           w.StartTime >= startDate && 
+                           w.StartTime <= endDate)
+                .Select(w => w.StartTime.Day)
+                .Distinct()
+                .ToList();
+
+            return workoutDays;
         }
     }
 }

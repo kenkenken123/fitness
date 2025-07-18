@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation'
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Calendar, Flame, Clock, Dumbbell, Filter, Plus, CheckCircle, Radio, ChevronDown, ChevronUp } from "lucide-react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Calendar, Flame, Clock, Dumbbell, Filter, Plus, CheckCircle, Radio, ChevronDown, ChevronUp, HelpCircle, Loader2, CalendarDays } from "lucide-react"
 import { getWorkoutLogsByUserId, updateWorkoutSetCompletion, updateWorkoutLogCompletion } from "@/src/api/workoutLogs"
 import { getTrainingEnvironmentsByUserId } from "@/src/api/trainingEnvironments"
 import { GenerateWorkoutDialog } from "@/components/GenerateWorkoutDialog"
@@ -40,6 +41,19 @@ const TrainingPage = () => {
   const [environments, setEnvironments] = useState<TrainingEnvironment[]>([]);
   const [expandedEnvironments, setExpandedEnvironments] = useState<Set<number>>(new Set());
   const [equipments, setEquipments] = useState<Equipment[]>([]);
+  
+  // AI指导相关状态
+  const [isAiDialogOpen, setIsAiDialogOpen] = useState(false);
+  const [currentExercise, setCurrentExercise] = useState("");
+  const [exerciseInstructions, setExerciseInstructions] = useState<any>(null);
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  
+  // 日历相关状态
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [workoutDays, setWorkoutDays] = useState<number[]>([]);
+  const [isCalendarLoading, setIsCalendarLoading] = useState(false);
+  
   const { user, isLoading: isAuthLoading } = useAuth();
   const router = useRouter();
 
@@ -138,6 +152,102 @@ const TrainingPage = () => {
     });
   };
 
+  // 获取AI运动指导
+  const getExerciseInstructions = async (exerciseName: string, weight: number, sets: number, reps: number) => {
+    setIsAiLoading(true);
+    setCurrentExercise(exerciseName);
+    setIsAiDialogOpen(true);
+
+    try {
+      console.log('开始请求AI指导:', exerciseName);
+      const requestBody = {
+        ExerciseName: exerciseName,
+        Weight: weight,
+        Sets: sets,
+        Reps: reps
+      };
+      console.log('请求体:', requestBody);
+
+      const response = await fetch('/api/exercises/instructions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      console.log('响应状态:', response.status);
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('AI指导数据:', data);
+        setExerciseInstructions(data);
+      } else {
+        console.error('获取运动指导失败，状态码:', response.status);
+        const errorText = await response.text();
+        console.error('错误响应:', errorText);
+        setExerciseInstructions({
+          description: "暂时无法获取该运动的详细指导，请稍后再试。",
+          keyPoints: [],
+          commonMistakes: [],
+          safetyTips: [],
+          muscles: []
+        });
+      }
+    } catch (error) {
+      console.error('请求失败:', error);
+      setExerciseInstructions({
+        description: "网络错误，请检查网络连接后重试。",
+        keyPoints: [],
+        commonMistakes: [],
+        safetyTips: [],
+        muscles: []
+      });
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
+
+  // 获取训练日期
+  const fetchWorkoutDays = async (year: number, month: number) => {
+    if (!user) return;
+    
+    setIsCalendarLoading(true);
+    try {
+      const response = await fetch(`/api/workoutlogs/user/${user.id}/calendar/${year}/${month}`);
+      if (response.ok) {
+        const days = await response.json();
+        setWorkoutDays(days);
+      } else {
+        console.error('获取训练日期失败');
+        setWorkoutDays([]);
+      }
+    } catch (error) {
+      console.error('请求训练日期失败:', error);
+      setWorkoutDays([]);
+    } finally {
+      setIsCalendarLoading(false);
+    }
+  };
+
+  // 打开日历
+  const openCalendar = () => {
+    setIsCalendarOpen(true);
+    fetchWorkoutDays(currentDate.getFullYear(), currentDate.getMonth() + 1);
+  };
+
+  // 切换月份
+  const changeMonth = (direction: 'prev' | 'next') => {
+    const newDate = new Date(currentDate);
+    if (direction === 'prev') {
+      newDate.setMonth(newDate.getMonth() - 1);
+    } else {
+      newDate.setMonth(newDate.getMonth() + 1);
+    }
+    setCurrentDate(newDate);
+    fetchWorkoutDays(newDate.getFullYear(), newDate.getMonth() + 1);
+  };
+
   const toggleEnvironment = (envId: number) => {
     setExpandedEnvironments(prev => {
       const newSet = new Set(prev);
@@ -165,9 +275,9 @@ const TrainingPage = () => {
       <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6 rounded-b-3xl sticky top-0 z-10 shadow-md">
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-2xl font-bold">训练历史</h1>
-          <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
-            <Filter className="w-4 h-4 mr-2" />
-            筛选
+          <Button variant="ghost" size="sm" className="text-white hover:bg-white/20" onClick={openCalendar}>
+            <CalendarDays className="w-4 h-4 mr-2" />
+            训练日历
           </Button>
         </div>
       </div>
@@ -238,8 +348,11 @@ const TrainingPage = () => {
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="p-0 h-auto font-medium hover:bg-transparent text-left"
-                              onClick={() => handleExerciseClick(exercise.activityName, exercise.weight, exercise.sets, exercise.reps)}
+                              className="p-0 h-auto font-medium hover:bg-transparent text-left hover:text-blue-500"
+                              onClick={() => {
+                                console.log('运动名称被点击，运动名称:', exercise.activityName);
+                                getExerciseInstructions(exercise.activityName, exercise.weight, exercise.sets, exercise.reps);
+                              }}
                             >
                               <span className={`${exercise.isCompleted ? 'text-green-600 line-through' : ''}`}>{exercise.activityName}</span>
                             </Button>
@@ -281,6 +394,195 @@ const TrainingPage = () => {
         sets={exerciseModal.sets}
         reps={exerciseModal.reps}
       />
+
+      {/* AI指导弹框 */}
+      <Dialog open={isAiDialogOpen} onOpenChange={setIsAiDialogOpen}>
+        <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Dumbbell className="w-5 h-5 text-blue-500" />
+              {currentExercise} - 动作要领
+            </DialogTitle>
+          </DialogHeader>
+          
+          {isAiLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+              <span className="ml-2 text-gray-600">AI正在为你解答...</span>
+            </div>
+          ) : exerciseInstructions ? (
+            <div className="space-y-4">
+              {/* 动作描述 */}
+              <div>
+                <h4 className="font-semibold text-gray-800 mb-2">动作描述</h4>
+                <p className="text-sm text-gray-600">{exerciseInstructions.description}</p>
+              </div>
+
+              {/* 关键要点 */}
+              {exerciseInstructions.keyPoints && exerciseInstructions.keyPoints.length > 0 && (
+                <div>
+                  <h4 className="font-semibold text-gray-800 mb-2">关键要点</h4>
+                  <ul className="space-y-1">
+                    {exerciseInstructions.keyPoints.map((point: string, index: number) => (
+                      <li key={index} className="text-sm text-gray-600 flex items-start gap-2">
+                        <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0"></span>
+                        {point}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* 目标肌肉 */}
+              {exerciseInstructions.muscles && exerciseInstructions.muscles.length > 0 && (
+                <div>
+                  <h4 className="font-semibold text-gray-800 mb-2">目标肌肉</h4>
+                  <div className="flex flex-wrap gap-1">
+                    {exerciseInstructions.muscles.map((muscle: string, index: number) => (
+                      <Badge key={index} variant="secondary" className="text-xs">
+                        {muscle}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 常见错误 */}
+              {exerciseInstructions.commonMistakes && exerciseInstructions.commonMistakes.length > 0 && (
+                <div>
+                  <h4 className="font-semibold text-gray-800 mb-2">常见错误</h4>
+                  <ul className="space-y-1">
+                    {exerciseInstructions.commonMistakes.map((mistake: string, index: number) => (
+                      <li key={index} className="text-sm text-gray-600 flex items-start gap-2">
+                        <span className="w-1.5 h-1.5 bg-red-500 rounded-full mt-2 flex-shrink-0"></span>
+                        {mistake}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* 安全提示 */}
+              {exerciseInstructions.safetyTips && exerciseInstructions.safetyTips.length > 0 && (
+                <div>
+                  <h4 className="font-semibold text-gray-800 mb-2">安全提示</h4>
+                  <ul className="space-y-1">
+                    {exerciseInstructions.safetyTips.map((tip: string, index: number) => (
+                      <li key={index} className="text-sm text-gray-600 flex items-start gap-2">
+                        <span className="w-1.5 h-1.5 bg-green-500 rounded-full mt-2 flex-shrink-0"></span>
+                        {tip}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          ) : null}
+        </DialogContent>
+      </Dialog>
+
+      {/* 训练日历弹框 */}
+      <Dialog open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CalendarDays className="w-5 h-5 text-blue-500" />
+              训练日历
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {/* 月份导航 */}
+            <div className="flex items-center justify-between">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => changeMonth('prev')}
+                className="p-2"
+              >
+                <ChevronDown className="w-4 h-4 rotate-90" />
+              </Button>
+              <h3 className="font-semibold text-lg">
+                {currentDate.getFullYear()}年{currentDate.getMonth() + 1}月
+              </h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => changeMonth('next')}
+                className="p-2"
+              >
+                <ChevronDown className="w-4 h-4 -rotate-90" />
+              </Button>
+            </div>
+
+            {/* 日历网格 */}
+            {isCalendarLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+                <span className="ml-2 text-gray-600">加载中...</span>
+              </div>
+            ) : (
+              <div className="grid grid-cols-7 gap-1">
+                {/* 星期标题 */}
+                {['日', '一', '二', '三', '四', '五', '六'].map((day) => (
+                  <div key={day} className="text-center text-sm font-medium text-gray-500 py-2">
+                    {day}
+                  </div>
+                ))}
+                
+                {/* 日历日期 */}
+                {(() => {
+                  const year = currentDate.getFullYear();
+                  const month = currentDate.getMonth();
+                  const firstDay = new Date(year, month, 1);
+                  const lastDay = new Date(year, month + 1, 0);
+                  const startDate = new Date(firstDay);
+                  startDate.setDate(startDate.getDate() - firstDay.getDay());
+                  
+                  const days = [];
+                  for (let i = 0; i < 42; i++) {
+                    const date = new Date(startDate);
+                    date.setDate(startDate.getDate() + i);
+                    
+                    const isCurrentMonth = date.getMonth() === month;
+                    const isWorkoutDay = workoutDays.includes(date.getDate()) && isCurrentMonth;
+                    const isToday = date.toDateString() === new Date().toDateString();
+                    
+                    days.push(
+                      <div
+                        key={i}
+                        className={`
+                          text-center py-2 text-sm rounded-md cursor-pointer
+                          ${isCurrentMonth ? 'text-gray-900' : 'text-gray-300'}
+                          ${isWorkoutDay ? 'bg-green-100 text-green-800 font-medium' : ''}
+                          ${isToday ? 'bg-blue-100 text-blue-800 font-medium' : ''}
+                          ${isWorkoutDay && isToday ? 'bg-green-200 text-green-900' : ''}
+                          hover:bg-gray-100
+                        `}
+                      >
+                        {date.getDate()}
+                      </div>
+                    );
+                  }
+                  return days;
+                })()}
+              </div>
+            )}
+
+            {/* 图例 */}
+            <div className="flex items-center justify-center gap-4 text-sm">
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 bg-green-100 rounded"></div>
+                <span>训练日</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 bg-blue-100 rounded"></div>
+                <span>今天</span>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

@@ -10,5 +10,6 @@ namespace fitness.Services
         Task<WorkoutLog> GenerateWorkoutLogAsync(int trainingEnvironmentId, int userId, string trainingFocus = null);
         void UpdateWorkoutSetCompletion(int setId, bool isCompleted);
         void UpdateWorkoutLogCompletion(int logId, bool isCompleted);
+        List<int> GetWorkoutDaysInMonth(int userId, int year, int month);
     }
 }
