@@ -7,7 +7,7 @@ namespace backend.DTOs
     {
         public string Username { get; set; }
         public string Email { get; set; }
-        public DateTime JoinDate { get; set; }
+        public DateTime? JoinDate { get; set; }
         public string Avatar { get; set; }
         public UserStatsDto Stats { get; set; }
         public List<AchievementDto> Achievements { get; set; }

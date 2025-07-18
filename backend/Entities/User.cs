@@ -14,12 +14,11 @@ namespace fitness.Entities
         [Required]
         [StringLength(50)]
         // 用户名
-        public string Username { get; set; } = string.Empty;
+        public string? Username { get; set; } = string.Empty;
 
-        [Required]
         [StringLength(100)]
         // 邮箱
-        public string Email { get; set; } = string.Empty;
+        public string? Email { get; set; } = string.Empty;
 
         [Required]
         [StringLength(255)] // 增加长度以适应哈希
@@ -27,7 +26,7 @@ namespace fitness.Entities
         public string PasswordHash { get; set; } = string.Empty;
 
         // 加入日期
-        public DateTime JoinDate { get; set; }
+        public DateTime? JoinDate { get; set; }
 
         // 头像URL (可选)
         [StringLength(255)]

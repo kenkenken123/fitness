@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from "react"
+import { useRouter } from 'next/navigation'
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -9,6 +10,8 @@ import { getWorkoutLogsByUserId, updateWorkoutSetCompletion, updateWorkoutLogCom
 import { getTrainingEnvironmentsByUserId } from "@/src/api/trainingEnvironments"
 import { GenerateWorkoutDialog } from "@/components/GenerateWorkoutDialog"
 import { ExerciseDetailModal } from "@/components/ExerciseDetailModal"
+import { WorkoutLog } from "@/src/api/workoutLogs"
+import { useAuth } from "@/src/context/AuthContext"
 
 
 interface Equipment {
@@ -37,20 +40,22 @@ const TrainingPage = () => {
   const [environments, setEnvironments] = useState<TrainingEnvironment[]>([]);
   const [expandedEnvironments, setExpandedEnvironments] = useState<Set<number>>(new Set());
   const [equipments, setEquipments] = useState<Equipment[]>([]);
-  const userId = 1; // 假设当前用户ID为1 (游客)
+  const { user, isLoading: isAuthLoading } = useAuth();
+  const router = useRouter();
 
-  const fetchLogs = async () => {
+  const fetchLogs = async (userId: number) => {
     setIsLoading(true);
+    console.log("userId", userId);
     try {
       const [logsData, envsData] = await Promise.all([
         getWorkoutLogsByUserId(userId),
-        getTrainingEnvironmentsByUserId()
+        getTrainingEnvironmentsByUserId(userId)
       ]);
       
       // Fetch equipment details for environments
-      const eqpsData = [];
+      const eqpsData: Equipment[] = [];
       try {
-        const equipmentResponse = await fetch('/api/equipments');
+        const equipmentResponse = await fetch(`/api/Equipments/ByUserId/${userId}`);
         const equipmentData = await equipmentResponse.json();
         setEquipments(equipmentData);
       } catch (error) {
@@ -76,8 +81,16 @@ const TrainingPage = () => {
   };
 
   useEffect(() => {
-    fetchLogs();
-  }, []);
+    if (!isAuthLoading) {
+      if (user) {
+        console.log(user);
+        fetchLogs(user.id);
+      } else {
+        // 用户未登录，跳转到登录页
+        router.push('/');
+      }
+    }
+  }, [user, isAuthLoading, router]);
 
   const handleSetCompletionToggle = async (logId: number, setId: number, isCompleted: boolean) => {
     try {
@@ -157,55 +170,6 @@ const TrainingPage = () => {
             筛选
           </Button>
         </div>
-      </div>
-
-      {/* Training Environments */}
-      <div className="p-4 md:p-6 space-y-4">
-        <h2 className="text-xl font-bold text-gray-800">训练环境</h2>
-        {environments.length === 0 ? (
-          <div className="text-center py-8">
-            <Dumbbell className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-            <p className="text-gray-500">暂无训练环境，请先添加训练环境</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {environments.map((env) => (
-              <Card key={env.id} className="overflow-hidden">
-                <CardContent className="p-0">
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-between p-4 hover:bg-gray-50"
-                    onClick={() => toggleEnvironment(env.id)}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                        <Dumbbell className="w-5 h-5 text-white" />
-                      </div>
-                      <span className="font-semibold text-lg">{env.name}</span>
-                    </div>
-                    {expandedEnvironments.has(env.id) ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-                  </Button>
-                  
-                  {expandedEnvironments.has(env.id) && (
-                    <div className="px-4 pb-4 border-t">
-                      <p className="text-sm text-gray-600 mb-3 mt-3">可用器材:</p>
-                      <div className="flex flex-wrap gap-2">
-                        {env.equipmentIds.map((equipmentId) => {
-                          const equipment = equipments.find((e: any) => e.id === equipmentId);
-                          return equipment ? (
-                            <Badge key={equipment.id} variant="outline" className="bg-blue-50">
-                              {equipment.name}
-                            </Badge>
-                          ) : null;
-                        })}
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
       </div>
 
       {/* Logs List */}
@@ -306,7 +270,7 @@ const TrainingPage = () => {
         open={isGenerateDialogOpen}
         onOpenChange={setGenerateDialogOpen}
         onSuccess={handleGenerationSuccess}
-        userId={userId}
+        userId={user?.id ?? 0 }
       />
 
       <ExerciseDetailModal

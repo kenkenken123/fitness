@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, Edit, Trash2, Dumbbell } from "lucide-react";
 import { EquipmentDialog } from '@/components/EquipmentDialog';
+import { useAuth } from "@/src/context/AuthContext"
 
 interface Equipment {
   id: number;
@@ -29,6 +30,7 @@ const EnvironmentManagementPage = () => {
   const [equipments, setEquipments] = useState<Equipment[]>([]);
   const [isDialogOpen, setDialogOpen] = useState(false);
   const [selectedEquipment, setSelectedEquipment] = useState<Equipment | null>(null);
+  const { user, isLoading: isAuthLoading } = useAuth();
 
   const fetchEnvironmentDetails = async () => {
     if (id) {
@@ -36,7 +38,7 @@ const EnvironmentManagementPage = () => {
         const envResponse = await axios.get(`/api/trainingEnvironments/${id}`);
         setEnvironment(envResponse.data);
         // Assuming the equipment details need to be fetched separately
-        const equipResponse = await axios.get(`/api/equipments`);
+        const equipResponse = await axios.get(`/api/Equipments/ByUserId/${user?.id}`);
         setEquipments(equipResponse.data.filter((eq: Equipment) => envResponse.data.equipmentIds.includes(eq.id)));
       } catch (error) {
         console.error("Failed to fetch environment details", error);

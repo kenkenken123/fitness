@@ -15,5 +15,8 @@ namespace backend.DTOs
         public string Type { get; set; }
 
         public double? Weight { get; set; }
+
+        [Required]
+        public int UserId { get; set; }
     }
 }

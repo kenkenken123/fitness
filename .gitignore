@@ -32,5 +32,4 @@ yarn-error.log*
 /frontend/build/
 /frontend/public/
 /frontend/src/
-/backend/.vs/Fitness
-/Furion.Database.Migrations
+/backend/.vs/

@@ -9,6 +9,7 @@ import { MapPin, Plus, Edit, Trash2, Dumbbell } from "lucide-react"
 import { AddEnvironmentDialog } from '@/components/AddEnvironmentDialog';
 import { getTrainingEnvironmentsByUserId } from '@/src/api/trainingEnvironments';
 import axios from 'axios';
+import { useAuth } from "@/src/context/AuthContext"
 
 // Define the types for our data
 interface TrainingEnvironment {
@@ -26,21 +27,20 @@ const LocationsPage = () => {
   const [environments, setEnvironments] = useState<TrainingEnvironment[]>([]);
   const [equipments, setEquipments] = useState<Equipment[]>([]);
   const [isAddDialogOpen, setAddDialogOpen] = useState(false);
+  const { user, isLoading: isAuthLoading } = useAuth();;
 
-  
-
-  const fetchEnvironments = async () => {
+  const fetchEnvironments = async (userId: number) => {
     try {
-      const data = await getTrainingEnvironmentsByUserId();
+      const data = await getTrainingEnvironmentsByUserId(userId);
       setEnvironments(data);
     } catch (error) {
       console.error("Failed to fetch environments", error);
     }
   };
 
-  const fetchEquipments = async () => {
+  const fetchEquipments = async (userId: number) => {
     try {
-      const data = await axios.get('/api/equipments');
+      const data = await axios.get(`/api/Equipments/ByUserId/${userId}`);
       setEquipments(data.data);
     } catch (error) {
       console.error("Failed to fetch equipments", error);
@@ -48,14 +48,14 @@ const LocationsPage = () => {
   };
 
   useEffect(() => {
-    fetchEnvironments();
-    fetchEquipments();
+    fetchEnvironments(user.id);
+    fetchEquipments(user.id);
   }, []);
 
   const handleDelete = async (id: number) => {
     try {
       await axios.delete(`/api/trainingEnvironments/${id}`);
-      fetchEnvironments(); // Refresh the list
+      fetchEnvironments(user.id); // Refresh the list
     } catch (error) {
       console.error("Failed to delete environment", error);
     }

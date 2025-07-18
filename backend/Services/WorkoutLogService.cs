@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Net.Http.Headers;
 using System.Text;
 using backend.DTOs;
+using Microsoft.EntityFrameworkCore;
 
 namespace fitness.Services
 {
@@ -31,7 +32,8 @@ namespace fitness.Services
 
         public IEnumerable<WorkoutLog> GetWorkoutLogs(int userId)
         {
-            return _workoutLogRepository.Where(log => log.UserId == userId).ToList();
+            // 使用 Include 方法来预加载 WorkoutSets 导航属性
+            return _workoutLogRepository.Where(log => log.UserId == userId).Include(log => log.WorkoutSets).ToList();
         }
 
         public void CreateWorkoutLog(WorkoutLogDto logDto)

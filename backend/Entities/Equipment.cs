@@ -22,6 +22,9 @@ namespace fitness.Entities
         // 重量 (kg)，可以为 null
         public double? Weight { get; set; }
 
+        // 设备所属的用户ID
+        public int? UserId { get; set; }
+
         // 设备所属的环境设备集合
         public ICollection<EnvironmentEquipment> EnvironmentEquipments { get; set; } = new List<EnvironmentEquipment>();
     }

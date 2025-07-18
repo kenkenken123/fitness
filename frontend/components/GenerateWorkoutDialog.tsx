@@ -31,7 +31,7 @@ export const GenerateWorkoutDialog = ({ open, onOpenChange, onSuccess, userId }:
     if (open) {
       const fetchEnvironments = async () => {
         try {
-          const data = await getTrainingEnvironmentsByUserId();
+          const data = await getTrainingEnvironmentsByUserId(userId);
           setEnvironments(data);
         } catch (error) {
           console.error("Failed to fetch environments", error);

@@ -19,10 +19,10 @@ namespace fitness.Controllers
             _equipmentRepository = equipmentRepository;
         }
 
-        [HttpGet]
-        public IEnumerable<Equipment> GetEquipments()
+        [HttpGet("ByUserId/{userId}")]
+        public IEnumerable<Equipment> GetEquipments(int userId)
         {
-            return _equipmentRepository.AsQueryable().ToList();
+            return _equipmentRepository.AsQueryable().Where(e => e.UserId == userId).ToList();
         }
 
         [HttpPost]
@@ -32,7 +32,8 @@ namespace fitness.Controllers
             {
                 Name = equipmentDto.Name,
                 Type = equipmentDto.Type,
-                Weight = equipmentDto.Weight
+                Weight = equipmentDto.Weight,
+                UserId = equipmentDto.UserId
             };
             _equipmentRepository.Insert(equipment);
             return Ok(equipment);
