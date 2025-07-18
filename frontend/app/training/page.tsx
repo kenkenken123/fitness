@@ -114,17 +114,42 @@ const TrainingPage = () => {
   const handleSetCompletionToggle = async (logId: number, setId: number, isCompleted: boolean) => {
     try {
       await updateWorkoutSetCompletion(logId, setId, isCompleted);
+      
+      // 更新本地状态
       setLogs(prevLogs => 
         prevLogs.map(log => {
           if (log.id === logId) {
             const updatedSets = log.workoutSets.map(set => 
               set.id === setId ? { ...set, isCompleted } : set
             );
-            return { ...log, workoutSets: updatedSets };
+            
+            // 检查是否所有训练项目都完成了
+            const allSetsCompleted = updatedSets.every(set => set.isCompleted);
+            
+            return { 
+              ...log, 
+              workoutSets: updatedSets,
+              // 如果所有项目都完成，自动标记整个训练计划为完成
+              isCompleted: allSetsCompleted
+            };
           }
           return log;
         })
       );
+      
+      // 如果所有项目都完成了，自动更新后端的训练计划完成状态
+      const updatedLog = logs.find(log => log.id === logId);
+      if (updatedLog) {
+        const updatedSets = updatedLog.workoutSets.map(set => 
+          set.id === setId ? { ...set, isCompleted } : set
+        );
+        const allSetsCompleted = updatedSets.every(set => set.isCompleted);
+        
+        if (allSetsCompleted && !updatedLog.isCompleted) {
+          // 自动将整个训练计划标记为完成
+          await handleLogCompletionToggle(logId, true);
+        }
+      }
     } catch (error) {
       console.error("Failed to update set completion", error);
     }
@@ -351,7 +376,14 @@ const TrainingPage = () => {
                       onClick={() => handleLogCompletionToggle(log.id, !log.isCompleted)}
                       className="cursor-pointer"
                     >
-                      {log.isCompleted ? '已完成' : '标记完成'}
+                      {log.isCompleted ? (
+                        <>
+                          <CheckCircle className="w-4 h-4 mr-1" />
+                          已完成
+                        </>
+                      ) : (
+                        '标记完成'
+                      )}
                     </Button>
                     <Button
                       variant="ghost"
@@ -377,10 +409,29 @@ const TrainingPage = () => {
 
                 {log.workoutSets && (
                   <div className="border-t pt-3">
-                    <p className="text-sm font-medium text-gray-700 mb-2">训练项目:</p>
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-sm font-medium text-gray-700">训练项目:</p>
+                      <div className="flex items-center gap-2 text-xs text-gray-500">
+                        <span>
+                          {log.workoutSets.filter(set => set.isCompleted).length}/{log.workoutSets.length} 已完成
+                        </span>
+                        <div className="w-16 h-1 bg-gray-200 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-green-500 transition-all duration-300"
+                            style={{ 
+                              width: `${(log.workoutSets.filter(set => set.isCompleted).length / log.workoutSets.length) * 100}%` 
+                            }}
+                          ></div>
+                        </div>
+                      </div>
+                    </div>
                     <div className="space-y-2">
                       {log.workoutSets.map((exercise) => (
-                        <div key={exercise.id} className="flex items-center justify-between p-2 rounded-md bg-gray-50 hover:bg-gray-100 transition-colors">
+                        <div key={exercise.id} className={`flex items-center justify-between p-2 rounded-md transition-colors ${
+                          exercise.isCompleted 
+                            ? 'bg-green-50 border border-green-200' 
+                            : 'bg-gray-50 hover:bg-gray-100'
+                        }`}>
                           <div className="flex items-center gap-2">
                             <Button
                               variant="ghost"
@@ -402,7 +453,7 @@ const TrainingPage = () => {
                               <span className={`${exercise.isCompleted ? 'text-green-600 line-through' : ''}`}>{exercise.activityName}</span>
                             </Button>
                           </div>
-                          <div className="text-sm text-gray-600">
+                          <div className={`text-sm ${exercise.isCompleted ? 'text-green-600' : 'text-gray-600'}`}>
                             <span>{exercise.weight}kg</span> x <span>{exercise.sets}组</span> x <span>{exercise.reps}次</span>
                           </div>
                         </div>
