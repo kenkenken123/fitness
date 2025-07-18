@@ -411,17 +411,34 @@ const TrainingPage = () => {
                   <div className="border-t pt-3">
                     <div className="flex items-center justify-between mb-2">
                       <p className="text-sm font-medium text-gray-700">训练项目:</p>
-                      <div className="flex items-center gap-2 text-xs text-gray-500">
-                        <span>
-                          {log.workoutSets.filter(set => set.isCompleted).length}/{log.workoutSets.length} 已完成
-                        </span>
-                        <div className="w-16 h-1 bg-gray-200 rounded-full overflow-hidden">
-                          <div 
-                            className="h-full bg-green-500 transition-all duration-300"
-                            style={{ 
-                              width: `${(log.workoutSets.filter(set => set.isCompleted).length / log.workoutSets.length) * 100}%` 
-                            }}
-                          ></div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            // 快速完成所有未完成的项目
+                            log.workoutSets.forEach(exercise => {
+                              if (!exercise.isCompleted) {
+                                handleSetCompletionToggle(log.id, exercise.id, true);
+                              }
+                            });
+                          }}
+                          className="text-xs px-2 py-1 h-auto text-blue-600 bg-blue-50 hover:bg-blue-100"
+                        >
+                          一键完成
+                        </Button>
+                        <div className="flex items-center gap-2 text-xs text-gray-500">
+                          <span>
+                            {log.workoutSets.filter(set => set.isCompleted).length}/{log.workoutSets.length} 已完成
+                          </span>
+                          <div className="w-16 h-1 bg-gray-200 rounded-full overflow-hidden">
+                            <div 
+                              className="h-full bg-green-500 transition-all duration-300"
+                              style={{ 
+                                width: `${(log.workoutSets.filter(set => set.isCompleted).length / log.workoutSets.length) * 100}%` 
+                              }}
+                            ></div>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -453,8 +470,30 @@ const TrainingPage = () => {
                               <span className={`${exercise.isCompleted ? 'text-green-600 line-through' : ''}`}>{exercise.activityName}</span>
                             </Button>
                           </div>
-                          <div className={`text-sm ${exercise.isCompleted ? 'text-green-600' : 'text-gray-600'}`}>
-                            <span>{exercise.weight}kg</span> x <span>{exercise.sets}组</span> x <span>{exercise.reps}次</span>
+                          <div className="flex items-center gap-2">
+                            <div className={`text-sm ${exercise.isCompleted ? 'text-green-600' : 'text-gray-600'}`}>
+                              {exercise.weight > 0 ? (
+                                <>
+                                  <span>{exercise.weight}kg</span> x <span>{exercise.sets}组</span> x <span>{exercise.reps}次</span>
+                                </>
+                              ) : (
+                                <>
+                                  <span>{exercise.sets}组</span> x <span>{exercise.reps}次</span>
+                                </>
+                              )}
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleSetCompletionToggle(log.id, exercise.id, !exercise.isCompleted)}
+                              className={`text-xs px-2 py-1 h-auto ${
+                                exercise.isCompleted 
+                                  ? 'text-green-600 bg-green-100 hover:bg-green-200' 
+                                  : 'text-gray-500 bg-gray-100 hover:bg-gray-200'
+                              }`}
+                            >
+                              {exercise.isCompleted ? '已完成' : '标记完成'}
+                            </Button>
                           </div>
                         </div>
                       ))}

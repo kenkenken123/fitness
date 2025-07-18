@@ -18,6 +18,7 @@ namespace fitness.EntityFramework.Core
         public DbSet<Equipment> Equipment { get; set; }
         public DbSet<EnvironmentEquipment> EnvironmentEquipments { get; set; }
         public DbSet<WorkoutSet> WorkoutSets { get; set; }
+        public DbSet<ExerciseInstruction> ExerciseInstructions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

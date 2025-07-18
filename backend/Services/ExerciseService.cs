@@ -5,6 +5,9 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using fitness.Controllers;
+using fitness.Entities;
+using Microsoft.EntityFrameworkCore;
+using fitness.EntityFramework.Core;
 
 namespace fitness.Services
 {
@@ -13,14 +16,58 @@ namespace fitness.Services
     {
         private readonly IConfiguration _configuration;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly DefaultDbContext _dbContext;
 
-        public ExerciseService(IConfiguration configuration, IHttpClientFactory httpClientFactory)
+        public ExerciseService(IConfiguration configuration, IHttpClientFactory httpClientFactory, DefaultDbContext dbContext)
         {
             _configuration = configuration;
             _httpClientFactory = httpClientFactory;
+            _dbContext = dbContext;
         }
 
         public async Task<ExerciseInstructionResponse> GetExerciseInstructionsAsync(string exerciseName, decimal weight, int sets, int reps)
+        {
+            // 首先尝试从数据库获取
+            var existingInstruction = await _dbContext.ExerciseInstructions
+                .FirstOrDefaultAsync(ei => ei.ExerciseName == exerciseName);
+
+            if (existingInstruction != null)
+            {
+                // 如果存在，直接返回数据库中的数据
+                return new ExerciseInstructionResponse
+                {
+                    Description = existingInstruction.Description,
+                    KeyPoints = JsonSerializer.Deserialize<string[]>(existingInstruction.KeyPointsJson),
+                    CommonMistakes = JsonSerializer.Deserialize<string[]>(existingInstruction.CommonMistakesJson),
+                    SafetyTips = JsonSerializer.Deserialize<string[]>(existingInstruction.SafetyTipsJson),
+                    Muscles = JsonSerializer.Deserialize<string[]>(existingInstruction.MusclesJson)
+                };
+            }
+
+            // 如果不存在，从AI获取
+            var aiResponse = await GetInstructionsFromAI(exerciseName, weight, sets, reps);
+            
+            // 保存到数据库
+            var newInstruction = new ExerciseInstruction
+            {
+                ExerciseName = exerciseName,
+                Weight = weight,
+                Sets = sets,
+                Reps = reps,
+                Description = aiResponse.Description,
+                KeyPointsJson = JsonSerializer.Serialize(aiResponse.KeyPoints),
+                CommonMistakesJson = JsonSerializer.Serialize(aiResponse.CommonMistakes),
+                SafetyTipsJson = JsonSerializer.Serialize(aiResponse.SafetyTips),
+                MusclesJson = JsonSerializer.Serialize(aiResponse.Muscles)
+            };
+
+            _dbContext.ExerciseInstructions.Add(newInstruction);
+            await _dbContext.SaveChangesAsync();
+
+            return aiResponse;
+        }
+
+        private async Task<ExerciseInstructionResponse> GetInstructionsFromAI(string exerciseName, decimal weight, int sets, int reps)
         {
             var prompt = BuildExercisePrompt(exerciseName, weight, sets, reps);
             
