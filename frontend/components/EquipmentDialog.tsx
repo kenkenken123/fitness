@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import axios from 'axios';
+import { useAuth } from '@/src/context/AuthContext';
 
 interface Equipment {
   id: number;
@@ -51,6 +52,7 @@ export const EquipmentDialog: React.FC<EquipmentDialogProps> = ({ open, onOpenCh
   const [name, setName] = useState('');
   const [type, setType] = useState('');
   const [weight, setWeight] = useState<string>('');
+  const { user } = useAuth();
 
   useEffect(() => {
     if (equipment) {
@@ -73,10 +75,16 @@ export const EquipmentDialog: React.FC<EquipmentDialogProps> = ({ open, onOpenCh
   };
 
   const handleSubmit = async () => {
+    if (!user) {
+      console.error('User not authenticated');
+      return;
+    }
+
     const equipmentData = {
       name,
       type,
       weight: weight ? parseFloat(weight) : null,
+      userId: user.id,
     };
 
     try {

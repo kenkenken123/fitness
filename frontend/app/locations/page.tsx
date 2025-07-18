@@ -48,12 +48,18 @@ const LocationsPage = () => {
   };
 
   useEffect(() => {
-    fetchEnvironments(user.id);
-    fetchEquipments(user.id);
-  }, []);
+    if (user && !isAuthLoading) {
+      fetchEnvironments(user.id);
+      fetchEquipments(user.id);
+    }
+  }, [user, isAuthLoading]);
 
   const handleDelete = async (id: number) => {
     try {
+      if (!user) {
+        console.error('User not authenticated');
+        return;
+      }
       await axios.delete(`/api/trainingEnvironments/${id}`);
       fetchEnvironments(user.id); // Refresh the list
     } catch (error) {
@@ -134,7 +140,7 @@ const LocationsPage = () => {
         <AddEnvironmentDialog
           open={isAddDialogOpen}
           onOpenChange={setAddDialogOpen}
-          onSuccess={fetchEnvironments}
+          onSuccess={() => user && fetchEnvironments(user.id)}
         />
       </div>
     </div>

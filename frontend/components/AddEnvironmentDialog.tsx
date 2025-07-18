@@ -6,6 +6,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { getEquipments } from '@/src/api/equipments';
 import { createTrainingEnvironment } from '@/src/api/trainingEnvironments';
+import { useAuth } from '@/src/context/AuthContext';
 
 interface AddEnvironmentDialogProps {
   open: boolean;
@@ -17,12 +18,13 @@ export const AddEnvironmentDialog: React.FC<AddEnvironmentDialogProps> = ({ open
   const [name, setName] = useState('');
   const [equipments, setEquipments] = useState<Equipment[]>([]);
   const [selectedEquipments, setSelectedEquipments] = useState<number[]>([]);
+  const { user } = useAuth();
 
   useEffect(() => {
-    if (open) {
-      getEquipments().then(setEquipments).catch(console.error);
+    if (open && user) {
+      getEquipments(user.id).then(setEquipments).catch(console.error);
     }
-  }, [open]);
+  }, [open, user]);
 
   const handleCheckboxChange = (equipmentId: number) => {
     setSelectedEquipments(prev =>
@@ -34,7 +36,11 @@ export const AddEnvironmentDialog: React.FC<AddEnvironmentDialogProps> = ({ open
 
   const handleSubmit = async () => {
     try {
-      await createTrainingEnvironment({ name, equipmentIds: selectedEquipments });
+      if (!user) {
+        console.error('User not authenticated');
+        return;
+      }
+      await createTrainingEnvironment({ name, equipmentIds: selectedEquipments }, user.id);
       onSuccess();
       onOpenChange(false);
     } catch (error) {
