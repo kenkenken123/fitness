@@ -71,9 +71,9 @@ const Home = () => {
   // 如果正在加载，显示加载状态
   if (isLoading || loadingData) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
           <p className="text-gray-600">加载中...</p>
         </div>
       </div>
@@ -119,57 +119,69 @@ const Home = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pb-20">
       {/* 头部欢迎区域 */}
-      <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white p-6 rounded-b-3xl">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-2xl font-bold">你好, {user.username}!</h1>
-            <p className="text-orange-100 mt-1">准备好今天的训练了吗？</p>
+      <div className="relative overflow-hidden">
+        <div className="bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 text-white p-4 sm:p-6 pb-8">
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">你好, {user.username}!</h1>
+              <p className="text-blue-100 text-xs sm:text-sm">准备好今天的训练了吗？</p>
+            </div>
+            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg ml-3">
+              <Dumbbell className="w-6 h-6 sm:w-8 sm:h-8" />
+            </div>
           </div>
-          <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-            <Dumbbell className="w-6 h-6" />
-          </div>
-        </div>
 
-        {/* 今日统计 */}
-        <div className="grid grid-cols-4 gap-4 mt-6">
-          <div className="text-center">
-            <div className="text-2xl font-bold">{todayStats.workoutsCompleted}</div>
-            <div className="text-xs text-orange-100">训练</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold">{todayStats.caloriesBurned}</div>
-            <div className="text-xs text-orange-100">卡路里</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold">{todayStats.totalDuration}</div>
-            <div className="text-xs text-orange-100">分钟</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold">{todayStats.currentStreak}</div>
-            <div className="text-xs text-orange-100">连续天</div>
+          {/* 今日统计 */}
+          <div className="grid grid-cols-4 gap-3 sm:gap-4">
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 sm:p-4 text-center">
+              <div className="text-xl sm:text-2xl font-bold mb-1">{todayStats.workoutsCompleted}</div>
+              <div className="text-xs text-blue-100">训练</div>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 sm:p-4 text-center">
+              <div className="text-xl sm:text-2xl font-bold mb-1">{todayStats.caloriesBurned}</div>
+              <div className="text-xs text-blue-100">卡路里</div>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 sm:p-4 text-center">
+              <div className="text-xl sm:text-2xl font-bold mb-1">{todayStats.totalDuration}</div>
+              <div className="text-xs text-blue-100">分钟</div>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 sm:p-4 text-center">
+              <div className="text-xl sm:text-2xl font-bold mb-1">{todayStats.currentStreak}</div>
+              <div className="text-xs text-blue-100">连续天</div>
+            </div>
           </div>
         </div>
+        
+        {/* Decorative Elements */}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>
+        <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
       </div>
 
-      <div className="p-6 space-y-6">
+      {/* Content Section */}
+      <div className="px-4 sm:px-6 -mt-6 relative z-10 space-y-6">
         {/* 本周目标 */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Target className="w-5 h-5 text-orange-500" />
-              本周目标
-            </CardTitle>
+        <Card className="border-0 shadow-xl rounded-3xl overflow-hidden">
+          <CardHeader className="bg-white border-b border-gray-100 pb-4 sm:pb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center shadow-lg">
+                <Target className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-lg sm:text-xl font-bold text-gray-800">本周目标</CardTitle>
+                <p className="text-xs sm:text-sm text-gray-500">训练进度追踪</p>
+              </div>
+            </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm text-gray-600">训练进度</span>
               <span className="text-sm font-medium">
                 {weeklyGoal.current}/{weeklyGoal.target} 次
               </span>
             </div>
-            <Progress value={weeklyGoal.percentage} className="h-2 mb-2" />
+            <Progress value={weeklyGoal.percentage} className="h-2 mb-3" />
             <p className="text-xs text-gray-500">
               {weeklyGoal.current >= weeklyGoal.target 
                 ? "恭喜完成本周目标！" 
@@ -180,68 +192,85 @@ const Home = () => {
         </Card>
 
         {/* 快速开始 */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Play className="w-5 h-5 text-green-500" />
-              快速开始
-            </CardTitle>
+        <Card className="border-0 shadow-xl rounded-3xl overflow-hidden">
+          <CardHeader className="bg-white border-b border-gray-100 pb-4 sm:pb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-green-500 to-teal-500 rounded-xl flex items-center justify-center shadow-lg">
+                <Play className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-lg sm:text-xl font-bold text-gray-800">快速开始</CardTitle>
+                <p className="text-xs sm:text-sm text-gray-500">选择训练类型</p>
+              </div>
+            </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 sm:p-6">
             <div className="grid grid-cols-2 gap-3">
-              <Button className="h-16 flex-col gap-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700">
+              <Button className="h-16 flex-col gap-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-lg hover:shadow-xl transition-all duration-200 rounded-2xl">
                 <Dumbbell className="w-5 h-5" />
-                <span className="text-xs">力量训练</span>
+                <span className="text-xs font-medium">力量训练</span>
               </Button>
-              <Button className="h-16 flex-col gap-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700">
+              <Button className="h-16 flex-col gap-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-lg hover:shadow-xl transition-all duration-200 rounded-2xl">
                 <Flame className="w-5 h-5" />
-                <span className="text-xs">有氧运动</span>
+                <span className="text-xs font-medium">有氧运动</span>
               </Button>
             </div>
           </CardContent>
         </Card>
 
         {/* 最近训练 */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Clock className="w-5 h-5 text-purple-500" />
-              最近训练
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {recentWorkouts.length > 0 ? (
-              recentWorkouts.map((workout) => (
-                <div key={workout.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center">
-                      <Dumbbell className="w-5 h-5 text-white" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-sm">{workout.name}</h4>
-                      <p className="text-xs text-gray-500">{formatDate(workout.date)}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="flex items-center gap-2 text-xs text-gray-600">
-                      <Clock className="w-3 h-3" />
-                      {workout.duration}分钟
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-gray-600 mt-1">
-                      <Flame className="w-3 h-3" />
-                      {workout.calories}卡
-                    </div>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="text-center py-8">
-                <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Dumbbell className="w-8 h-8 text-gray-400" />
-                </div>
-                <p className="text-gray-500">暂无训练记录，开始您的第一次训练吧！</p>
+        <Card className="border-0 shadow-xl rounded-3xl overflow-hidden">
+          <CardHeader className="bg-white border-b border-gray-100 pb-4 sm:pb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-xl flex items-center justify-center shadow-lg">
+                <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </div>
-            )}
+              <div>
+                <CardTitle className="text-lg sm:text-xl font-bold text-gray-800">最近训练</CardTitle>
+                <p className="text-xs sm:text-sm text-gray-500">训练历史记录</p>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="p-4 sm:p-6">
+            <div className="space-y-3">
+              {recentWorkouts.length > 0 ? (
+                recentWorkouts.map((workout, index) => (
+                  <div 
+                    key={workout.id} 
+                    className="group flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-2xl hover:from-blue-50 hover:to-purple-50 transition-all duration-300 border border-gray-200 hover:border-blue-200 hover:shadow-lg"
+                    style={{ animationDelay: `${index * 100}ms` }}
+                  >
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-200">
+                        <Dumbbell className="w-5 h-5 text-white" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-semibold text-gray-800 text-sm mb-1 truncate">{workout.name}</h4>
+                        <p className="text-xs text-gray-500">{formatDate(workout.date)}</p>
+                      </div>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <div className="flex items-center gap-2 text-xs text-gray-600">
+                        <Clock className="w-3 h-3" />
+                        {workout.duration}分钟
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-gray-600 mt-1">
+                        <Flame className="w-3 h-3" />
+                        {workout.calories}卡
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-8 sm:py-12">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-gray-200 to-gray-300 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg">
+                    <Dumbbell className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" />
+                  </div>
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-600 mb-2">暂无训练记录</h3>
+                  <p className="text-gray-500 text-sm">开始您的第一次训练吧！</p>
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
 

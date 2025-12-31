@@ -1,6 +1,6 @@
 "use client"
 
-import Login from "../login"
+import Login from "../app/login/page"
 import { useAuth } from "../src/context/AuthContext"
 
 const ClientLoginPage = () => {

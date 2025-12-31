@@ -68,11 +68,27 @@ const ProfilePage = () => {
   };
 
   if (isLoading) {
-    return <div className="flex justify-center items-center h-screen">正在加载您的个人数据...</div>;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">正在加载您的个人数据...</p>
+        </div>
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="flex justify-center items-center h-screen text-red-500">{error}</div>;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <Info className="w-8 h-8 text-red-500" />
+          </div>
+          <p className="text-red-500 font-medium">{error}</p>
+        </div>
+      </div>
+    );
   }
 
   if (!profile) {
@@ -88,87 +104,107 @@ const ProfilePage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pb-20">
       {/* Header with user info */}
-      <div className="bg-gradient-to-r from-purple-500 to-pink-600 text-white p-6 rounded-b-3xl">
-        <div className="flex items-center gap-4 mb-6">
-          <Avatar className="w-20 h-20 border-4 border-white/20">
-            <AvatarImage src={profile.avatar || "/placeholder.svg"} />
-            <AvatarFallback className="bg-white/20 text-white text-xl font-bold">
-              {profile.username.charAt(0)}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold">{profile.username}</h1>
-            <p className="text-purple-100">{profile.email}</p>
-            <p className="text-purple-100 text-sm mt-1">加入于 {new Date(profile.joinDate).toLocaleDateString("zh-CN")}</p>
+      <div className="relative overflow-hidden">
+        <div className="bg-gradient-to-br from-purple-600 via-pink-600 to-indigo-700 text-white p-4 sm:p-6 pb-8">
+          <div className="flex items-center gap-4 mb-6">
+            <Avatar className="w-16 h-16 sm:w-20 sm:h-20 border-4 border-white/20 shadow-lg">
+              <AvatarImage src={profile.avatar || "/placeholder.svg"} />
+              <AvatarFallback className="bg-white/20 text-white text-lg sm:text-xl font-bold">
+                {profile.username.charAt(0)}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-xl sm:text-2xl font-bold mb-1 truncate">{profile.username}</h1>
+              <p className="text-purple-100 text-sm truncate">{profile.email}</p>
+              <p className="text-purple-100 text-xs mt-1">加入于 {new Date(profile.joinDate).toLocaleDateString("zh-CN")}</p>
+            </div>
           </div>
-        </div>
 
-        {/* User stats */}
-        <div className="grid grid-cols-3 gap-4">
-          <div className="text-center">
-            <div className="text-2xl font-bold">{profile.stats.totalWorkouts}</div>
-            <div className="text-xs text-purple-100">总训练</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold">{profile.stats.currentStreak}</div>
-            <div className="text-xs text-purple-100">连续天数</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold">{Math.round(profile.stats.totalHours)}h</div>
-            <div className="text-xs text-purple-100">总时长</div>
+          {/* User stats */}
+          <div className="grid grid-cols-3 gap-3 sm:gap-4">
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 sm:p-4 text-center">
+              <div className="text-xl sm:text-2xl font-bold mb-1">{profile.stats.totalWorkouts}</div>
+              <div className="text-xs text-purple-100">总训练</div>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 sm:p-4 text-center">
+              <div className="text-xl sm:text-2xl font-bold mb-1">{profile.stats.currentStreak}</div>
+              <div className="text-xs text-purple-100">连续天数</div>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 sm:p-4 text-center">
+              <div className="text-xl sm:text-2xl font-bold mb-1">{Math.round(profile.stats.totalHours)}h</div>
+              <div className="text-xs text-purple-100">总时长</div>
+            </div>
           </div>
         </div>
+        
+        {/* Decorative Elements */}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>
+        <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
       </div>
 
-      <div className="p-6 space-y-6">
+      {/* Content Section */}
+      <div className="px-4 sm:px-6 -mt-6 relative z-10 space-y-6">
         {/* Detailed stats */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-blue-500" />
-              训练统计
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="text-center p-3 bg-blue-50 rounded-lg">
-                <div className="text-2xl font-bold text-blue-600">{profile.stats.totalCalories}</div>
-                <div className="text-sm text-blue-600">总消耗卡路里</div>
+        <Card className="border-0 shadow-xl rounded-3xl overflow-hidden">
+          <CardHeader className="bg-white border-b border-gray-100 pb-4 sm:pb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg">
+                <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </div>
-              <div className="text-center p-3 bg-green-50 rounded-lg">
-                <div className="text-2xl font-bold text-green-600">{profile.stats.longestStreak}</div>
-                <div className="text-sm text-green-600">最长连续天数</div>
+              <div>
+                <CardTitle className="text-lg sm:text-xl font-bold text-gray-800">训练统计</CardTitle>
+                <p className="text-xs sm:text-sm text-gray-500">详细训练数据分析</p>
               </div>
             </div>
-            <div className="text-center p-3 bg-purple-50 rounded-lg">
-              <div className="text-lg font-semibold text-purple-600">最爱训练</div>
-              <div className="text-sm text-purple-600">{profile.stats.favoriteWorkout}</div>
+          </CardHeader>
+          <CardContent className="p-4 sm:p-6 space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl p-4 border border-blue-200 text-center">
+                <div className="text-2xl sm:text-3xl font-bold text-blue-600 mb-1">{profile.stats.totalCalories}</div>
+                <div className="text-sm text-blue-600 font-medium">总消耗卡路里</div>
+              </div>
+              <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-2xl p-4 border border-green-200 text-center">
+                <div className="text-2xl sm:text-3xl font-bold text-green-600 mb-1">{profile.stats.longestStreak}</div>
+                <div className="text-sm text-green-600 font-medium">最长连续天数</div>
+              </div>
+            </div>
+            <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-2xl p-4 border border-purple-200 text-center">
+              <div className="text-lg font-semibold text-purple-600 mb-1">最爱训练</div>
+              <div className="text-sm text-purple-600 font-medium">{profile.stats.favoriteWorkout}</div>
             </div>
           </CardContent>
         </Card>
 
         {/* Achievements */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Trophy className="w-5 h-5 text-yellow-500" />
-              我的成就
-            </CardTitle>
+        <Card className="border-0 shadow-xl rounded-3xl overflow-hidden">
+          <CardHeader className="bg-white border-b border-gray-100 pb-4 sm:pb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
+                <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-lg sm:text-xl font-bold text-gray-800">我的成就</CardTitle>
+                <p className="text-xs sm:text-sm text-gray-500">获得的训练成就</p>
+              </div>
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-3">
-              {profile.achievements.map((achievement) => (
+          <CardContent className="p-4 sm:p-6">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
+              {profile.achievements.map((achievement, index) => (
                 <div
                   key={achievement.id}
-                  className={`p-3 rounded-lg border-2 ${
-                    achievement.earned ? "bg-yellow-50 border-yellow-200" : "bg-gray-50 border-gray-200"
+                  className={`p-3 sm:p-4 rounded-2xl border-2 transition-all duration-300 ${
+                    achievement.earned 
+                      ? "bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-200 shadow-sm" 
+                      : "bg-gradient-to-r from-gray-50 to-gray-100 border-gray-200"
                   }`}
+                  style={{ animationDelay: `${index * 100}ms` }}
                 >
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="flex items-center gap-2 mb-2">
                     <Trophy className={`w-4 h-4 ${achievement.earned ? "text-yellow-500" : "text-gray-400"}`} />
-                    <span className={`text-sm font-medium ${achievement.earned ? "text-yellow-800" : "text-gray-500"}`}>
+                    <span className={`text-sm font-semibold ${achievement.earned ? "text-yellow-800" : "text-gray-500"}`}>
                       {achievement.name}
                     </span>
                   </div>
@@ -182,7 +218,7 @@ const ProfilePage = () => {
         </Card>
 
         {/* Menu options */}
-        <Card>
+        <Card className="border-0 shadow-xl rounded-3xl overflow-hidden">
           <CardContent className="p-0">
             {menuItems.map((item, index) => {
               const IconComponent = item.icon;
@@ -190,15 +226,17 @@ const ProfilePage = () => {
                 <div key={index}>
                   <button
                     onClick={item.action}
-                    className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
+                    className="w-full flex items-center justify-between p-4 sm:p-5 hover:bg-gray-50 transition-all duration-200 group"
                   >
                     <div className="flex items-center gap-3">
-                      <IconComponent className="w-5 h-5 text-gray-500" />
-                      <span className="font-medium">{item.label}</span>
+                      <div className="w-8 h-8 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center group-hover:from-blue-100 group-hover:to-blue-200 transition-all duration-200">
+                        <IconComponent className="w-4 h-4 text-gray-500 group-hover:text-blue-600" />
+                      </div>
+                      <span className="font-medium text-gray-800">{item.label}</span>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-gray-400" />
+                    <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors" />
                   </button>
-                  {index < menuItems.length - 1 && <Separator />}
+                  {index < menuItems.length - 1 && <Separator className="mx-4" />}
                 </div>
               );
             })}
@@ -206,7 +244,11 @@ const ProfilePage = () => {
         </Card>
 
         {/* Logout button */}
-        <Button variant="destructive" onClick={handleLogout} className="w-full h-12 text-base font-medium">
+        <Button 
+          variant="destructive" 
+          onClick={handleLogout} 
+          className="w-full h-12 sm:h-14 text-base font-medium bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 shadow-lg hover:shadow-xl transition-all duration-200 rounded-2xl"
+        >
           <LogOut className="w-5 h-5 mr-2" />
           退出登录
         </Button>

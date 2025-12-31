@@ -8,6 +8,13 @@ import { getEquipments } from '@/src/api/equipments';
 import { createTrainingEnvironment } from '@/src/api/trainingEnvironments';
 import { useAuth } from '@/src/context/AuthContext';
 
+interface Equipment {
+  id: number;
+  name: string;
+  type: string;
+  weight: number | null;
+}
+
 interface AddEnvironmentDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;

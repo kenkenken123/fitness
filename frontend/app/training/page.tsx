@@ -330,87 +330,128 @@ const TrainingPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pb-24">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6 rounded-b-3xl sticky top-0 z-10 shadow-md">
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-bold">训练历史</h1>
-          <Button variant="ghost" size="sm" className="text-white hover:bg-white/20" onClick={openCalendar}>
-            <CalendarDays className="w-4 h-4 mr-2" />
-            训练日历
-          </Button>
+      <div className="relative overflow-hidden">
+        <div className="bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 text-white p-4 sm:p-6 pb-8 sticky top-0 z-10 shadow-lg">
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg">
+                <Dumbbell className="w-4 h-4 sm:w-5 sm:h-5" />
+              </div>
+              <div>
+                <h1 className="text-xl sm:text-2xl font-bold">训练历史</h1>
+                <p className="text-blue-100 text-xs sm:text-sm">查看和管理您的训练记录</p>
+              </div>
+            </div>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="text-white hover:bg-white/20 backdrop-blur-sm rounded-xl px-3 py-2" 
+              onClick={openCalendar}
+            >
+              <CalendarDays className="w-4 h-4 mr-2" />
+              <span className="hidden sm:inline">训练日历</span>
+            </Button>
+          </div>
         </div>
+        
+        {/* Decorative Elements */}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>
+        <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
       </div>
 
-      {/* Logs List */}
-      <div className="p-4 md:p-6 space-y-4">
+      {/* Content Section */}
+      <div className="px-4 sm:px-6 -mt-6 relative z-10 space-y-4">
         {isLoading ? (
-          <p className="text-center text-gray-500">加载中...</p>
-        ) : logs.length === 0 ? (
           <div className="text-center py-12">
-            <Dumbbell className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-600 mb-2">还没有训练记录</h3>
-            <p className="text-gray-500">点击右下角按钮，让AI为你生成第一个训练计划吧！</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p className="text-gray-600">加载中...</p>
+          </div>
+        ) : logs.length === 0 ? (
+          <div className="text-center py-12 sm:py-16">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-gray-200 to-gray-300 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg">
+              <Dumbbell className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" />
+            </div>
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-600 mb-2">还没有训练记录</h3>
+            <p className="text-gray-500 text-sm">点击右下角按钮，让AI为你生成第一个训练计划吧！</p>
           </div>
         ) : (
-          logs.map((log) => (
-            <Card key={log.id} className={`hover:shadow-lg transition-shadow border-l-4 ${log.isCompleted ? 'border-green-500' : 'border-yellow-500'}`}>
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center ${log.isCompleted ? 'bg-gradient-to-r from-green-400 to-cyan-400' : 'bg-gradient-to-r from-yellow-400 to-orange-400'}`}>
-                      <Dumbbell className="w-6 h-6 text-white" />
+          logs.map((log, index) => (
+            <Card key={log.id} className={`border-0 shadow-xl rounded-3xl overflow-hidden hover:shadow-2xl transition-all duration-300 ${log.isCompleted ? 'border-l-4 border-l-green-500' : 'border-l-4 border-l-yellow-500'}`}>
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex items-start justify-between mb-4 sm:mb-6">
+                  <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+                    <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center shadow-lg ${log.isCompleted ? 'bg-gradient-to-br from-green-500 to-cyan-500' : 'bg-gradient-to-br from-yellow-500 to-orange-500'}`}>
+                      <Dumbbell className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-lg">{log.name}</h3>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-bold text-lg sm:text-xl text-gray-800 mb-1 truncate">{log.name}</h3>
                       <div className="flex items-center gap-2 text-sm text-gray-500">
                         <Calendar className="w-4 h-4" />
                         {formatDate(log.startTime)}
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     <Button
                       variant={log.isCompleted ? "default" : "secondary"}
                       size="sm"
                       onClick={() => handleLogCompletionToggle(log.id, !log.isCompleted)}
-                      className="cursor-pointer"
+                      className={`cursor-pointer rounded-xl shadow-sm ${
+                        log.isCompleted 
+                          ? 'bg-gradient-to-r from-green-500 to-cyan-500 hover:from-green-600 hover:to-cyan-600' 
+                          : 'bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600'
+                      }`}
                     >
                       {log.isCompleted ? (
                         <>
                           <CheckCircle className="w-4 h-4 mr-1" />
-                          已完成
+                          <span className="hidden sm:inline">已完成</span>
                         </>
                       ) : (
-                        '标记完成'
+                        <>
+                          <span className="hidden sm:inline">标记完成</span>
+                        </>
                       )}
                     </Button>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => handleDeleteClick(log.id, log.name)}
-                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                      className="text-red-500 hover:text-red-700 hover:bg-red-50 rounded-xl"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-blue-500" />
-                    <span>预估时长: {log.estimatedDuration} 分钟</span>
+                <div className="grid grid-cols-2 gap-4 mb-4 sm:mb-6">
+                  <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl p-3 sm:p-4 border border-blue-200">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Clock className="w-4 h-4 text-blue-600" />
+                      <span className="text-sm font-medium text-blue-800">预估时长</span>
+                    </div>
+                    <span className="text-lg font-bold text-blue-900">{log.estimatedDuration} 分钟</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Flame className="w-4 h-4 text-red-500" />
-                    <span>预估热量: {log.estimatedCalories} 卡</span>
+                  <div className="bg-gradient-to-r from-red-50 to-red-100 rounded-2xl p-3 sm:p-4 border border-red-200">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Flame className="w-4 h-4 text-red-600" />
+                      <span className="text-sm font-medium text-red-800">预估热量</span>
+                    </div>
+                    <span className="text-lg font-bold text-red-900">{log.estimatedCalories} 卡</span>
                   </div>
                 </div>
 
                 {log.workoutSets && (
-                  <div className="border-t pt-3">
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-sm font-medium text-gray-700">训练项目:</p>
+                  <div className="border-t border-gray-200 pt-4 sm:pt-6">
+                    <div className="flex items-center justify-between mb-3 sm:mb-4">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-lg flex items-center justify-center">
+                          <Dumbbell className="w-3 h-3 text-white" />
+                        </div>
+                        <p className="text-sm font-semibold text-gray-800">训练项目</p>
+                      </div>
                       <div className="flex items-center gap-2">
                         <Button
                           variant="ghost"
@@ -423,17 +464,17 @@ const TrainingPage = () => {
                               }
                             });
                           }}
-                          className="text-xs px-2 py-1 h-auto text-blue-600 bg-blue-50 hover:bg-blue-100"
+                          className="text-xs px-3 py-1 h-auto text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl shadow-sm"
                         >
                           一键完成
                         </Button>
                         <div className="flex items-center gap-2 text-xs text-gray-500">
-                          <span>
+                          <span className="font-medium">
                             {log.workoutSets.filter(set => set.isCompleted).length}/{log.workoutSets.length} 已完成
                           </span>
-                          <div className="w-16 h-1 bg-gray-200 rounded-full overflow-hidden">
+                          <div className="w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden">
                             <div 
-                              className="h-full bg-green-500 transition-all duration-300"
+                              className="h-full bg-gradient-to-r from-green-500 to-cyan-500 transition-all duration-300"
                               style={{ 
                                 width: `${(log.workoutSets.filter(set => set.isCompleted).length / log.workoutSets.length) * 100}%` 
                               }}
@@ -442,39 +483,48 @@ const TrainingPage = () => {
                         </div>
                       </div>
                     </div>
-                    <div className="space-y-2">
-                      {log.workoutSets.map((exercise) => (
-                        <div key={exercise.id} className={`flex items-center justify-between p-2 rounded-md transition-colors ${
-                          exercise.isCompleted 
-                            ? 'bg-green-50 border border-green-200' 
-                            : 'bg-gray-50 hover:bg-gray-100'
-                        }`}>
-                          <div className="flex items-center gap-2">
+                    <div className="space-y-3">
+                      {log.workoutSets.map((exercise, exerciseIndex) => (
+                        <div 
+                          key={exercise.id} 
+                          className={`group flex items-center justify-between p-3 sm:p-4 rounded-2xl transition-all duration-300 border ${
+                            exercise.isCompleted 
+                              ? 'bg-gradient-to-r from-green-50 to-green-100 border-green-200 shadow-sm' 
+                              : 'bg-gradient-to-r from-gray-50 to-gray-100 border-gray-200 hover:from-blue-50 hover:to-purple-50 hover:border-blue-200 hover:shadow-lg'
+                          }`}
+                          style={{ animationDelay: `${exerciseIndex * 50}ms` }}
+                        >
+                          <div className="flex items-center gap-3 min-w-0 flex-1">
                             <Button
                               variant="ghost"
                               size="sm"
                               className="flex items-center gap-2 p-0 h-auto font-normal hover:bg-transparent"
                               onClick={() => handleSetCompletionToggle(log.id, exercise.id, !exercise.isCompleted)}
                             >
-                              {exercise.isCompleted ? <CheckCircle className="w-5 h-5 text-green-500" /> : <Radio className="w-5 h-5 text-gray-400"/>}
+                              {exercise.isCompleted ? 
+                                <CheckCircle className="w-5 h-5 text-green-500" /> : 
+                                <Radio className="w-5 h-5 text-gray-400"/>
+                              }
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="p-0 h-auto font-medium hover:bg-transparent text-left hover:text-blue-500"
+                              className="p-0 h-auto font-medium hover:bg-transparent text-left hover:text-blue-500 min-w-0 flex-1"
                               onClick={() => {
                                 console.log('运动名称被点击，运动名称:', exercise.activityName);
                                 getExerciseInstructions(exercise.activityName, exercise.weight, exercise.sets, exercise.reps);
                               }}
                             >
-                              <span className={`${exercise.isCompleted ? 'text-green-600 line-through' : ''}`}>{exercise.activityName}</span>
+                              <span className={`truncate ${exercise.isCompleted ? 'text-green-600 line-through' : 'text-gray-800'}`}>
+                                {exercise.activityName}
+                              </span>
                             </Button>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <div className={`text-sm ${exercise.isCompleted ? 'text-green-600' : 'text-gray-600'}`}>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <div className={`text-sm font-medium ${exercise.isCompleted ? 'text-green-600' : 'text-gray-600'}`}>
                               {exercise.weight > 0 ? (
                                 <>
-                                  <span>{exercise.weight}kg</span> x <span>{exercise.sets}组</span> x <span>{exercise.reps}次</span>
+                                  <span className="font-bold">{exercise.weight}kg</span> x <span>{exercise.sets}组</span> x <span>{exercise.reps}次</span>
                                 </>
                               ) : (
                                 <>
@@ -486,7 +536,7 @@ const TrainingPage = () => {
                               variant="ghost"
                               size="sm"
                               onClick={() => handleSetCompletionToggle(log.id, exercise.id, !exercise.isCompleted)}
-                              className={`text-xs px-2 py-1 h-auto ${
+                              className={`text-xs px-3 py-1 h-auto rounded-xl shadow-sm ${
                                 exercise.isCompleted 
                                   ? 'text-green-600 bg-green-100 hover:bg-green-200' 
                                   : 'text-gray-500 bg-gray-100 hover:bg-gray-200'
@@ -509,7 +559,7 @@ const TrainingPage = () => {
       {/* Add Button */}
       <Button
         onClick={() => setGenerateDialogOpen(true)}
-        className="fixed bottom-24 right-6 w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 shadow-lg text-white"
+        className="fixed bottom-24 right-6 w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 shadow-xl hover:shadow-2xl text-white transition-all duration-300 hover:scale-110"
       >
         <Plus className="w-8 h-8" />
       </Button>

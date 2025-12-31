@@ -18,6 +18,9 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
 }).AddInject();
+
+// 注册AI器材识别服务
+builder.Services.AddScoped<IAiEquipmentRecognitionService, AiEquipmentRecognitionService>();
 builder.Services.AddDatabaseAccessor(options =>
 {
     // 添加数据库连接池

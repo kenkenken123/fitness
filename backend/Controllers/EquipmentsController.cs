@@ -1,10 +1,12 @@
 using backend.DTOs;
 using fitness.Entities;
+using fitness.Services;
 using Furion.DatabaseAccessor;
 using Furion.FriendlyException;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace fitness.Controllers
 {
@@ -13,10 +15,12 @@ namespace fitness.Controllers
     public class EquipmentsController : ControllerBase
     {
         private readonly IRepository<Equipment> _equipmentRepository;
+        private readonly IAiEquipmentRecognitionService _aiRecognitionService;
 
-        public EquipmentsController(IRepository<Equipment> equipmentRepository)
+        public EquipmentsController(IRepository<Equipment> equipmentRepository, IAiEquipmentRecognitionService aiRecognitionService)
         {
             _equipmentRepository = equipmentRepository;
+            _aiRecognitionService = aiRecognitionService;
         }
 
         [HttpGet("ByUserId/{userId}")]
@@ -61,6 +65,20 @@ namespace fitness.Controllers
 
             _equipmentRepository.Delete(equipment);
             return Ok();
+        }
+
+        [HttpPost("recognize")]
+        public async Task<IActionResult> RecognizeEquipments([FromBody] AiEquipmentRecognitionDto request)
+        {
+            try
+            {
+                var result = await _aiRecognitionService.RecognizeEquipmentsAsync(request.ImageBase64);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = "AI识别失败: " + ex.Message });
+            }
         }
     }
 }
