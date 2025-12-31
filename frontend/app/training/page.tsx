@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from "react"
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -41,26 +41,28 @@ const TrainingPage = () => {
   const [environments, setEnvironments] = useState<TrainingEnvironment[]>([]);
   const [expandedEnvironments, setExpandedEnvironments] = useState<Set<number>>(new Set());
   const [equipments, setEquipments] = useState<Equipment[]>([]);
-  
+
   // AI指导相关状态
   const [isAiDialogOpen, setIsAiDialogOpen] = useState(false);
   const [currentExercise, setCurrentExercise] = useState("");
   const [exerciseInstructions, setExerciseInstructions] = useState<any>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
-  
+
   // 日历相关状态
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [workoutDays, setWorkoutDays] = useState<number[]>([]);
   const [isCalendarLoading, setIsCalendarLoading] = useState(false);
-  
+
   // 删除相关状态
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{ id: number; name: string } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  
+
   const { user, isLoading: isAuthLoading } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const initialFocus = searchParams.get('focus') || undefined;
 
   const fetchLogs = async (userId: number) => {
     setIsLoading(true);
@@ -70,7 +72,7 @@ const TrainingPage = () => {
         getWorkoutLogsByUserId(userId),
         getTrainingEnvironmentsByUserId(userId)
       ]);
-      
+
       // Fetch equipment details for environments
       const eqpsData: Equipment[] = [];
       try {
@@ -81,13 +83,13 @@ const TrainingPage = () => {
         console.error("Failed to fetch equipments", error);
         setEquipments([]);
       }
-      
+
       // 按开始时间降序排序
       const sortedData = logsData.sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
       setLogs(sortedData);
       setEnvironments(envsData);
       setEquipments(eqpsData);
-      
+
       // 默认展开第一个环境
       if (envsData.length > 0) {
         setExpandedEnvironments(new Set([envsData[0].id]));
@@ -104,30 +106,35 @@ const TrainingPage = () => {
       if (user) {
         console.log(user);
         fetchLogs(user.id);
+
+        // Check for 'generate' action from URL
+        if (searchParams.get('action') === 'generate') {
+          setGenerateDialogOpen(true);
+        }
       } else {
         // 用户未登录，跳转到登录页
         router.push('/');
       }
     }
-  }, [user, isAuthLoading, router]);
+  }, [user, isAuthLoading, router, searchParams]);
 
   const handleSetCompletionToggle = async (logId: number, setId: number, isCompleted: boolean) => {
     try {
       await updateWorkoutSetCompletion(logId, setId, isCompleted);
-      
+
       // 更新本地状态
-      setLogs(prevLogs => 
+      setLogs(prevLogs =>
         prevLogs.map(log => {
           if (log.id === logId) {
-            const updatedSets = log.workoutSets.map(set => 
+            const updatedSets = log.workoutSets.map(set =>
               set.id === setId ? { ...set, isCompleted } : set
             );
-            
+
             // 检查是否所有训练项目都完成了
             const allSetsCompleted = updatedSets.every(set => set.isCompleted);
-            
-            return { 
-              ...log, 
+
+            return {
+              ...log,
               workoutSets: updatedSets,
               // 如果所有项目都完成，自动标记整个训练计划为完成
               isCompleted: allSetsCompleted
@@ -136,15 +143,15 @@ const TrainingPage = () => {
           return log;
         })
       );
-      
+
       // 如果所有项目都完成了，自动更新后端的训练计划完成状态
       const updatedLog = logs.find(log => log.id === logId);
       if (updatedLog) {
-        const updatedSets = updatedLog.workoutSets.map(set => 
+        const updatedSets = updatedLog.workoutSets.map(set =>
           set.id === setId ? { ...set, isCompleted } : set
         );
         const allSetsCompleted = updatedSets.every(set => set.isCompleted);
-        
+
         if (allSetsCompleted && !updatedLog.isCompleted) {
           // 自动将整个训练计划标记为完成
           await handleLogCompletionToggle(logId, true);
@@ -158,8 +165,8 @@ const TrainingPage = () => {
   const handleLogCompletionToggle = async (logId: number, isCompleted: boolean) => {
     try {
       await updateWorkoutLogCompletion(logId, isCompleted);
-      setLogs(prevLogs => 
-        prevLogs.map(log => 
+      setLogs(prevLogs =>
+        prevLogs.map(log =>
           log.id === logId ? { ...log, isCompleted } : log
         )
       );
@@ -241,7 +248,7 @@ const TrainingPage = () => {
   // 获取训练日期
   const fetchWorkoutDays = async (year: number, month: number) => {
     if (!user) return;
-    
+
     setIsCalendarLoading(true);
     try {
       const response = await fetch(`/api/workoutlogs/user/${user.id}/calendar/${year}/${month}`);
@@ -286,13 +293,13 @@ const TrainingPage = () => {
 
   const handleDeleteConfirm = async () => {
     if (!deleteTarget) return;
-    
+
     setIsDeleting(true);
     try {
       const response = await fetch(`/api/workoutlogs/${deleteTarget.id}`, {
         method: 'DELETE',
       });
-      
+
       if (response.ok) {
         // 从列表中移除被删除的训练计划
         setLogs(prevLogs => prevLogs.filter(log => log.id !== deleteTarget.id));
@@ -330,220 +337,169 @@ const TrainingPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pb-24">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pb-28">
       {/* Header */}
       <div className="relative overflow-hidden">
-        <div className="bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 text-white p-4 sm:p-6 pb-8 sticky top-0 z-10 shadow-lg">
+        <div className="bg-candy-mint/30 px-4 pb-8 pt-[calc(env(safe-area-inset-top)+1rem)] sm:p-6 sticky top-0 z-10 rounded-b-[3rem]">
           <div className="flex items-center justify-between mb-4 sm:mb-6">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg">
-                <Dumbbell className="w-4 h-4 sm:w-5 sm:h-5" />
+              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm">
+                <div className="bg-candy-yellow rounded-full p-2">
+                  <Dumbbell className="w-5 h-5 text-orange-600" />
+                </div>
               </div>
               <div>
-                <h1 className="text-xl sm:text-2xl font-bold">训练历史</h1>
-                <p className="text-blue-100 text-xs sm:text-sm">查看和管理您的训练记录</p>
+                <h1 className="text-2xl font-black text-gray-800">训练历史</h1>
+                <p className="text-gray-500 text-sm font-bold">查看和管理您的训练记录 📅</p>
               </div>
             </div>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="text-white hover:bg-white/20 backdrop-blur-sm rounded-xl px-3 py-2" 
+            <Button
+              variant="ghost"
+              size="sm"
+              className="bg-white hover:bg-white/80 text-teal-700 rounded-full px-4 py-2 shadow-sm border border-candy-mint"
               onClick={openCalendar}
             >
               <CalendarDays className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">训练日历</span>
+              <span className="hidden sm:inline font-bold">训练日历</span>
             </Button>
           </div>
         </div>
-        
-        {/* Decorative Elements */}
-        <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>
-        <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
       </div>
 
       {/* Content Section */}
-      <div className="px-4 sm:px-6 -mt-6 relative z-10 space-y-4">
+      <div className="px-4 sm:px-6 relative z-10 space-y-4 mt-2">
         {isLoading ? (
           <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <p className="text-gray-600">加载中...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-candy-blue mx-auto mb-4"></div>
+            <p className="text-gray-400 font-bold">加载中...</p>
           </div>
         ) : logs.length === 0 ? (
           <div className="text-center py-12 sm:py-16">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-gray-200 to-gray-300 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg">
-              <Dumbbell className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" />
+            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Dumbbell className="w-10 h-10 text-gray-300" />
             </div>
-            <h3 className="text-lg sm:text-xl font-semibold text-gray-600 mb-2">还没有训练记录</h3>
-            <p className="text-gray-500 text-sm">点击右下角按钮，让AI为你生成第一个训练计划吧！</p>
+            <h3 className="text-lg font-bold text-gray-600 mb-2">还没有训练记录</h3>
+            <p className="text-gray-400 text-sm font-medium">点击右下角按钮，让AI为你生成第一个训练计划吧！✨</p>
           </div>
         ) : (
           logs.map((log, index) => (
-            <Card key={log.id} className={`border-0 shadow-xl rounded-3xl overflow-hidden hover:shadow-2xl transition-all duration-300 ${log.isCompleted ? 'border-l-4 border-l-green-500' : 'border-l-4 border-l-yellow-500'}`}>
-              <CardContent className="p-4 sm:p-6">
-                <div className="flex items-start justify-between mb-4 sm:mb-6">
-                  <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
-                    <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center shadow-lg ${log.isCompleted ? 'bg-gradient-to-br from-green-500 to-cyan-500' : 'bg-gradient-to-br from-yellow-500 to-orange-500'}`}>
-                      <Dumbbell className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
+            <Card key={log.id} className={`border-0 shadow-sm rounded-[2rem] overflow-hidden bg-white hover:shadow-md transition-all duration-300 border-l-[6px] ${log.isCompleted ? 'border-l-candy-mint' : 'border-l-candy-yellow'
+              }`}>
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-sm ${log.isCompleted ? 'bg-candy-mint/20' : 'bg-candy-yellow/20'
+                      }`}>
+                      <Dumbbell className={`w-6 h-6 ${log.isCompleted ? 'text-teal-600' : 'text-orange-500'
+                        }`} />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <h3 className="font-bold text-lg sm:text-xl text-gray-800 mb-1 truncate">{log.name}</h3>
-                      <div className="flex items-center gap-2 text-sm text-gray-500">
-                        <Calendar className="w-4 h-4" />
+                      <h3 className="font-bold text-lg text-gray-800 mb-1 truncate">{log.name}</h3>
+                      <div className="flex items-center gap-2 text-xs font-bold text-gray-400 bg-gray-50 px-2 py-1 rounded-full w-fit">
+                        <Calendar className="w-3 h-3" />
                         {formatDate(log.startTime)}
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
+                  <div className="flex items-center gap-1 flex-shrink-0">
                     <Button
-                      variant={log.isCompleted ? "default" : "secondary"}
+                      variant="ghost"
                       size="sm"
                       onClick={() => handleLogCompletionToggle(log.id, !log.isCompleted)}
-                      className={`cursor-pointer rounded-xl shadow-sm ${
-                        log.isCompleted 
-                          ? 'bg-gradient-to-r from-green-500 to-cyan-500 hover:from-green-600 hover:to-cyan-600' 
-                          : 'bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600'
-                      }`}
+                      className={`rounded-full h-8 px-3 text-xs font-bold ${log.isCompleted
+                        ? 'text-teal-700 bg-candy-mint/30 hover:bg-candy-mint/50'
+                        : 'text-orange-700 bg-candy-yellow/30 hover:bg-candy-yellow/50'
+                        }`}
                     >
-                      {log.isCompleted ? (
-                        <>
-                          <CheckCircle className="w-4 h-4 mr-1" />
-                          <span className="hidden sm:inline">已完成</span>
-                        </>
-                      ) : (
-                        <>
-                          <span className="hidden sm:inline">标记完成</span>
-                        </>
-                      )}
+                      {log.isCompleted ? '已完成' : '标记完成'}
                     </Button>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => handleDeleteClick(log.id, log.name)}
-                      className="text-red-500 hover:text-red-700 hover:bg-red-50 rounded-xl"
+                      className="text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full h-8 w-8 p-0"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 mb-4 sm:mb-6">
-                  <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl p-3 sm:p-4 border border-blue-200">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Clock className="w-4 h-4 text-blue-600" />
-                      <span className="text-sm font-medium text-blue-800">预估时长</span>
+                <div className="grid grid-cols-2 gap-3 mb-4">
+                  <div className="bg-candy-blue/10 rounded-2xl p-3 border border-candy-blue/20 text-center">
+                    <div className="flex items-center justify-center gap-1 mb-1 text-blue-400">
+                      <Clock className="w-3 h-3" />
+                      <span className="text-xs font-bold">时长</span>
                     </div>
-                    <span className="text-lg font-bold text-blue-900">{log.estimatedDuration} 分钟</span>
+                    <span className="text-base font-black text-blue-900">{log.estimatedDuration}m</span>
                   </div>
-                  <div className="bg-gradient-to-r from-red-50 to-red-100 rounded-2xl p-3 sm:p-4 border border-red-200">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Flame className="w-4 h-4 text-red-600" />
-                      <span className="text-sm font-medium text-red-800">预估热量</span>
+                  <div className="bg-candy-pink/10 rounded-2xl p-3 border border-candy-pink/20 text-center">
+                    <div className="flex items-center justify-center gap-1 mb-1 text-pink-400">
+                      <Flame className="w-3 h-3" />
+                      <span className="text-xs font-bold">热量</span>
                     </div>
-                    <span className="text-lg font-bold text-red-900">{log.estimatedCalories} 卡</span>
+                    <span className="text-base font-black text-pink-900">{log.estimatedCalories}</span>
                   </div>
                 </div>
 
                 {log.workoutSets && (
-                  <div className="border-t border-gray-200 pt-4 sm:pt-6">
-                    <div className="flex items-center justify-between mb-3 sm:mb-4">
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-lg flex items-center justify-center">
-                          <Dumbbell className="w-3 h-3 text-white" />
-                        </div>
-                        <p className="text-sm font-semibold text-gray-800">训练项目</p>
-                      </div>
+                  <div className="border-t border-gray-100 pt-4">
+                    <div className="flex items-center justify-between mb-3 px-1">
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">训练项目</p>
                       <div className="flex items-center gap-2">
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => {
-                            // 快速完成所有未完成的项目
                             log.workoutSets.forEach(exercise => {
                               if (!exercise.isCompleted) {
                                 handleSetCompletionToggle(log.id, exercise.id, true);
                               }
                             });
                           }}
-                          className="text-xs px-3 py-1 h-auto text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl shadow-sm"
+                          className="text-[10px] px-2 h-6 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-full font-bold"
                         >
-                          一键完成
+                          全完成
                         </Button>
-                        <div className="flex items-center gap-2 text-xs text-gray-500">
-                          <span className="font-medium">
-                            {log.workoutSets.filter(set => set.isCompleted).length}/{log.workoutSets.length} 已完成
-                          </span>
-                          <div className="w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                            <div 
-                              className="h-full bg-gradient-to-r from-green-500 to-cyan-500 transition-all duration-300"
-                              style={{ 
-                                width: `${(log.workoutSets.filter(set => set.isCompleted).length / log.workoutSets.length) * 100}%` 
-                              }}
-                            ></div>
-                          </div>
-                        </div>
+                        <span className="text-xs font-bold text-gray-500">
+                          {log.workoutSets.filter(set => set.isCompleted).length}/{log.workoutSets.length}
+                        </span>
                       </div>
                     </div>
-                    <div className="space-y-3">
+                    <div className="space-y-2">
                       {log.workoutSets.map((exercise, exerciseIndex) => (
-                        <div 
-                          key={exercise.id} 
-                          className={`group flex items-center justify-between p-3 sm:p-4 rounded-2xl transition-all duration-300 border ${
-                            exercise.isCompleted 
-                              ? 'bg-gradient-to-r from-green-50 to-green-100 border-green-200 shadow-sm' 
-                              : 'bg-gradient-to-r from-gray-50 to-gray-100 border-gray-200 hover:from-blue-50 hover:to-purple-50 hover:border-blue-200 hover:shadow-lg'
-                          }`}
-                          style={{ animationDelay: `${exerciseIndex * 50}ms` }}
+                        <div
+                          key={exercise.id}
+                          className={`group flex items-center justify-between p-3 rounded-2xl transition-all duration-200 border-2 ${exercise.isCompleted
+                            ? 'bg-candy-mint/10 border-candy-mint/20'
+                            : 'bg-white border-gray-100 hover:border-gray-200'
+                            }`}
                         >
                           <div className="flex items-center gap-3 min-w-0 flex-1">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="flex items-center gap-2 p-0 h-auto font-normal hover:bg-transparent"
+                            <button
+                              className={`flex items-center justify-center w-6 h-6 rounded-full border-2 transition-all ${exercise.isCompleted ? 'bg-teal-500 border-teal-500 text-white' : 'border-gray-300 text-transparent hover:border-teal-400'
+                                }`}
                               onClick={() => handleSetCompletionToggle(log.id, exercise.id, !exercise.isCompleted)}
                             >
-                              {exercise.isCompleted ? 
-                                <CheckCircle className="w-5 h-5 text-green-500" /> : 
-                                <Radio className="w-5 h-5 text-gray-400"/>
-                              }
-                            </Button>
+                              <CheckCircle className="w-4 h-4" />
+                            </button>
+
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="p-0 h-auto font-medium hover:bg-transparent text-left hover:text-blue-500 min-w-0 flex-1"
+                              className="p-0 h-auto font-bold hover:bg-transparent text-left hover:text-blue-500 min-w-0 flex-1"
                               onClick={() => {
-                                console.log('运动名称被点击，运动名称:', exercise.activityName);
                                 getExerciseInstructions(exercise.activityName, exercise.weight, exercise.sets, exercise.reps);
                               }}
                             >
-                              <span className={`truncate ${exercise.isCompleted ? 'text-green-600 line-through' : 'text-gray-800'}`}>
+                              <span className={`truncate text-sm ${exercise.isCompleted ? 'text-gray-400 line-through' : 'text-gray-700'}`}>
                                 {exercise.activityName}
                               </span>
                             </Button>
                           </div>
-                          <div className="flex items-center gap-2 flex-shrink-0">
-                            <div className={`text-sm font-medium ${exercise.isCompleted ? 'text-green-600' : 'text-gray-600'}`}>
-                              {exercise.weight > 0 ? (
-                                <>
-                                  <span className="font-bold">{exercise.weight}kg</span> x <span>{exercise.sets}组</span> x <span>{exercise.reps}次</span>
-                                </>
-                              ) : (
-                                <>
-                                  <span>{exercise.sets}组</span> x <span>{exercise.reps}次</span>
-                                </>
-                              )}
-                            </div>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleSetCompletionToggle(log.id, exercise.id, !exercise.isCompleted)}
-                              className={`text-xs px-3 py-1 h-auto rounded-xl shadow-sm ${
-                                exercise.isCompleted 
-                                  ? 'text-green-600 bg-green-100 hover:bg-green-200' 
-                                  : 'text-gray-500 bg-gray-100 hover:bg-gray-200'
-                              }`}
-                            >
-                              {exercise.isCompleted ? '已完成' : '标记完成'}
-                            </Button>
+                          <div className="text-xs font-bold text-gray-500 bg-white/50 px-2 py-1 rounded-lg">
+                            {exercise.weight > 0 ? `${exercise.weight}kg` : ''}
+                            {exercise.weight > 0 && ' × '}
+                            {exercise.sets}组 × {exercise.reps}
                           </div>
                         </div>
                       ))}
@@ -559,7 +515,7 @@ const TrainingPage = () => {
       {/* Add Button */}
       <Button
         onClick={() => setGenerateDialogOpen(true)}
-        className="fixed bottom-24 right-6 w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 shadow-xl hover:shadow-2xl text-white transition-all duration-300 hover:scale-110"
+        className="fixed bottom-24 right-6 w-16 h-16 rounded-full bg-candy-pink hover:bg-pink-400 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 border-4 border-white"
       >
         <Plus className="w-8 h-8" />
       </Button>
@@ -568,7 +524,8 @@ const TrainingPage = () => {
         open={isGenerateDialogOpen}
         onOpenChange={setGenerateDialogOpen}
         onSuccess={handleGenerationSuccess}
-        userId={user?.id ?? 0 }
+        userId={user?.id ?? 0}
+        initialFocus={searchParams.get('focus') || undefined}
       />
 
       <ExerciseDetailModal
@@ -589,7 +546,7 @@ const TrainingPage = () => {
               {currentExercise} - 动作要领
             </DialogTitle>
           </DialogHeader>
-          
+
           {isAiLoading ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
@@ -675,7 +632,7 @@ const TrainingPage = () => {
               训练日历
             </DialogTitle>
           </DialogHeader>
-          
+
           <div className="space-y-4">
             {/* 月份导航 */}
             <div className="flex items-center justify-between">
@@ -714,7 +671,7 @@ const TrainingPage = () => {
                     {day}
                   </div>
                 ))}
-                
+
                 {/* 日历日期 */}
                 {(() => {
                   const year = currentDate.getFullYear();
@@ -723,16 +680,16 @@ const TrainingPage = () => {
                   const lastDay = new Date(year, month + 1, 0);
                   const startDate = new Date(firstDay);
                   startDate.setDate(startDate.getDate() - firstDay.getDay());
-                  
+
                   const days = [];
                   for (let i = 0; i < 42; i++) {
                     const date = new Date(startDate);
                     date.setDate(startDate.getDate() + i);
-                    
+
                     const isCurrentMonth = date.getMonth() === month;
                     const isWorkoutDay = workoutDays.includes(date.getDate()) && isCurrentMonth;
                     const isToday = date.toDateString() === new Date().toDateString();
-                    
+
                     days.push(
                       <div
                         key={i}
@@ -778,7 +735,7 @@ const TrainingPage = () => {
               删除训练计划
             </DialogTitle>
           </DialogHeader>
-          
+
           <div className="space-y-4">
             <p className="text-gray-600">
               确定要删除训练计划 <span className="font-semibold">"{deleteTarget?.name}"</span> 吗？

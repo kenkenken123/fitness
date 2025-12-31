@@ -104,89 +104,96 @@ const ProfilePage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pb-28">
       {/* Header with user info */}
       <div className="relative overflow-hidden">
-        <div className="bg-gradient-to-br from-purple-600 via-pink-600 to-indigo-700 text-white p-4 sm:p-6 pb-8">
+        <div className="bg-candy-lavender/40 px-4 pb-8 pt-[calc(env(safe-area-inset-top)+1rem)] sm:p-6 rounded-b-[3rem]">
           <div className="flex items-center gap-4 mb-6">
-            <Avatar className="w-16 h-16 sm:w-20 sm:h-20 border-4 border-white/20 shadow-lg">
-              <AvatarImage src={profile.avatar || "/placeholder.svg"} />
-              <AvatarFallback className="bg-white/20 text-white text-lg sm:text-xl font-bold">
-                {profile.username.charAt(0)}
-              </AvatarFallback>
-            </Avatar>
+            <div className="relative">
+              <Avatar className="w-20 h-20 sm:w-24 sm:h-24 border-4 border-white shadow-md ring-4 ring-candy-lavender/30 bg-white">
+                <AvatarImage src={profile.avatar || "/icons/logo_muscle_duck.png"} className="object-cover" />
+                <AvatarFallback className="bg-white p-2">
+                  <img src="/icons/logo_muscle_duck.png" alt="Default Avatar" className="w-full h-full object-contain" />
+                </AvatarFallback>
+              </Avatar>
+              <div className="absolute -bottom-2 -right-2 bg-candy-yellow text-orange-700 text-xs font-bold px-2 py-1 rounded-full border-2 border-white shadow-sm flex items-center gap-1">
+                <Trophy className="w-3 h-3" />
+                Lv.1
+              </div>
+            </div>
+
             <div className="flex-1 min-w-0">
-              <h1 className="text-xl sm:text-2xl font-bold mb-1 truncate">{profile.username}</h1>
-              <p className="text-purple-100 text-sm truncate">{profile.email}</p>
-              <p className="text-purple-100 text-xs mt-1">加入于 {new Date(profile.joinDate).toLocaleDateString("zh-CN")}</p>
+              <h1 className="text-2xl sm:text-3xl font-black text-gray-800 mb-1 truncate">{profile.username}</h1>
+              <p className="text-purple-600 text-sm truncate font-medium">{profile.email}</p>
+              <div className="flex items-center gap-2 mt-2">
+                <span className="text-[10px] bg-white/60 px-2 py-1 rounded-full text-purple-600 font-bold">
+                  📅 {new Date(profile.joinDate).toLocaleDateString("zh-CN")} 加入
+                </span>
+              </div>
             </div>
           </div>
 
           {/* User stats */}
           <div className="grid grid-cols-3 gap-3 sm:gap-4">
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 sm:p-4 text-center">
-              <div className="text-xl sm:text-2xl font-bold mb-1">{profile.stats.totalWorkouts}</div>
-              <div className="text-xs text-purple-100">总训练</div>
+            <div className="bg-white rounded-[1.5rem] p-3 sm:p-4 text-center shadow-sm border border-candy-blue/20">
+              <div className="text-xl sm:text-2xl font-black text-gray-800 mb-1">{profile.stats.totalWorkouts}</div>
+              <div className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-widest">总训练</div>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 sm:p-4 text-center">
-              <div className="text-xl sm:text-2xl font-bold mb-1">{profile.stats.currentStreak}</div>
-              <div className="text-xs text-purple-100">连续天数</div>
+            <div className="bg-white rounded-[1.5rem] p-3 sm:p-4 text-center shadow-sm border border-candy-mint/20">
+              <div className="text-xl sm:text-2xl font-black text-gray-800 mb-1">{profile.stats.currentStreak}</div>
+              <div className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-widest">连续天数</div>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 sm:p-4 text-center">
-              <div className="text-xl sm:text-2xl font-bold mb-1">{Math.round(profile.stats.totalHours)}h</div>
-              <div className="text-xs text-purple-100">总时长</div>
+            <div className="bg-white rounded-[1.5rem] p-3 sm:p-4 text-center shadow-sm border border-candy-pink/20">
+              <div className="text-xl sm:text-2xl font-black text-gray-800 mb-1">{Math.round(profile.stats.totalHours)}h</div>
+              <div className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-widest">总时长</div>
             </div>
           </div>
         </div>
-        
-        {/* Decorative Elements */}
-        <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>
-        <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
       </div>
 
       {/* Content Section */}
-      <div className="px-4 sm:px-6 -mt-6 relative z-10 space-y-6">
+      <div className="px-4 sm:px-6 relative z-10 -mt-6 space-y-6">
         {/* Detailed stats */}
-        <Card className="border-0 shadow-xl rounded-3xl overflow-hidden">
-          <CardHeader className="bg-white border-b border-gray-100 pb-4 sm:pb-6">
+        <Card className="border-0 shadow-sm rounded-[2rem] overflow-hidden bg-white">
+          <CardHeader className="bg-white border-b border-gray-50 pb-4 sm:pb-6">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg">
-                <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+              <div className="w-10 h-10 bg-candy-blue rounded-full flex items-center justify-center">
+                <TrendingUp className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <CardTitle className="text-lg sm:text-xl font-bold text-gray-800">训练统计</CardTitle>
-                <p className="text-xs sm:text-sm text-gray-500">详细训练数据分析</p>
+                <CardTitle className="text-lg font-bold text-gray-800">训练统计</CardTitle>
+                <p className="text-xs text-gray-400 font-medium">详细训练数据分析 📊</p>
               </div>
             </div>
           </CardHeader>
           <CardContent className="p-4 sm:p-6 space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl p-4 border border-blue-200 text-center">
-                <div className="text-2xl sm:text-3xl font-bold text-blue-600 mb-1">{profile.stats.totalCalories}</div>
-                <div className="text-sm text-blue-600 font-medium">总消耗卡路里</div>
+              <div className="bg-candy-blue/10 rounded-[1.5rem] p-4 border border-blue-100 text-center">
+                <div className="text-2xl sm:text-3xl font-black text-blue-600 mb-1">{profile.stats.totalCalories}</div>
+                <div className="text-xs text-blue-400 font-bold uppercase">总消耗卡路里</div>
               </div>
-              <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-2xl p-4 border border-green-200 text-center">
-                <div className="text-2xl sm:text-3xl font-bold text-green-600 mb-1">{profile.stats.longestStreak}</div>
-                <div className="text-sm text-green-600 font-medium">最长连续天数</div>
+              <div className="bg-candy-mint/10 rounded-[1.5rem] p-4 border border-teal-100 text-center">
+                <div className="text-2xl sm:text-3xl font-black text-teal-600 mb-1">{profile.stats.longestStreak}</div>
+                <div className="text-xs text-teal-600 font-bold uppercase">最长连续天数</div>
               </div>
             </div>
-            <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-2xl p-4 border border-purple-200 text-center">
-              <div className="text-lg font-semibold text-purple-600 mb-1">最爱训练</div>
-              <div className="text-sm text-purple-600 font-medium">{profile.stats.favoriteWorkout}</div>
+            <div className="bg-candy-lavender/20 rounded-[1.5rem] p-4 border border-purple-100 text-center">
+              <div className="text-lg font-black text-purple-600 mb-1">最爱训练</div>
+              <div className="text-sm text-purple-500 font-bold">{profile.stats.favoriteWorkout || "暂无数据"}</div>
             </div>
           </CardContent>
         </Card>
 
         {/* Achievements */}
-        <Card className="border-0 shadow-xl rounded-3xl overflow-hidden">
-          <CardHeader className="bg-white border-b border-gray-100 pb-4 sm:pb-6">
+        <Card className="border-0 shadow-sm rounded-[2rem] overflow-hidden bg-white">
+          <CardHeader className="bg-white border-b border-gray-50 pb-4 sm:pb-6">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
-                <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+              <div className="w-10 h-10 bg-candy-yellow rounded-full flex items-center justify-center">
+                <Trophy className="w-5 h-5 text-orange-600" />
               </div>
               <div>
-                <CardTitle className="text-lg sm:text-xl font-bold text-gray-800">我的成就</CardTitle>
-                <p className="text-xs sm:text-sm text-gray-500">获得的训练成就</p>
+                <CardTitle className="text-lg font-bold text-gray-800">我的成就</CardTitle>
+                <p className="text-xs text-gray-400 font-medium">获得的训练成就 🏆</p>
               </div>
             </div>
           </CardHeader>
@@ -195,20 +202,18 @@ const ProfilePage = () => {
               {profile.achievements.map((achievement, index) => (
                 <div
                   key={achievement.id}
-                  className={`p-3 sm:p-4 rounded-2xl border-2 transition-all duration-300 ${
-                    achievement.earned 
-                      ? "bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-200 shadow-sm" 
-                      : "bg-gradient-to-r from-gray-50 to-gray-100 border-gray-200"
-                  }`}
-                  style={{ animationDelay: `${index * 100}ms` }}
+                  className={`p-3 sm:p-4 rounded-2xl border-2 transition-all duration-300 ${achievement.earned
+                    ? "bg-candy-yellow/10 border-candy-yellow/50 shadow-sm"
+                    : "bg-gray-50 border-gray-100 grayscale opacity-70"
+                    }`}
                 >
                   <div className="flex items-center gap-2 mb-2">
-                    <Trophy className={`w-4 h-4 ${achievement.earned ? "text-yellow-500" : "text-gray-400"}`} />
-                    <span className={`text-sm font-semibold ${achievement.earned ? "text-yellow-800" : "text-gray-500"}`}>
+                    <Trophy className={`w-4 h-4 ${achievement.earned ? "text-orange-500" : "text-gray-400"}`} />
+                    <span className={`text-sm font-bold ${achievement.earned ? "text-orange-800" : "text-gray-500"}`}>
                       {achievement.name}
                     </span>
                   </div>
-                  <p className={`text-xs ${achievement.earned ? "text-yellow-600" : "text-gray-400"}`}>
+                  <p className={`text-xs ${achievement.earned ? "text-orange-600" : "text-gray-400"}`}>
                     {achievement.description}
                   </p>
                 </div>
@@ -218,25 +223,25 @@ const ProfilePage = () => {
         </Card>
 
         {/* Menu options */}
-        <Card className="border-0 shadow-xl rounded-3xl overflow-hidden">
-          <CardContent className="p-0">
+        <Card className="border-0 shadow-sm rounded-[2rem] overflow-hidden bg-white">
+          <CardContent className="p-2 space-y-1">
             {menuItems.map((item, index) => {
               const IconComponent = item.icon;
               return (
                 <div key={index}>
                   <button
                     onClick={item.action}
-                    className="w-full flex items-center justify-between p-4 sm:p-5 hover:bg-gray-50 transition-all duration-200 group"
+                    className="w-full flex items-center justify-between p-4 rounded-2xl hover:bg-gray-50 transition-all duration-200 group"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center group-hover:from-blue-100 group-hover:to-blue-200 transition-all duration-200">
-                        <IconComponent className="w-4 h-4 text-gray-500 group-hover:text-blue-600" />
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center group-hover:bg-candy-blue/20 transition-all duration-200">
+                        <IconComponent className="w-5 h-5 text-gray-400 group-hover:text-blue-500" />
                       </div>
-                      <span className="font-medium text-gray-800">{item.label}</span>
+                      <span className="font-bold text-gray-700 group-hover:text-gray-900">{item.label}</span>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors" />
+                    <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-blue-400 transition-colors" />
                   </button>
-                  {index < menuItems.length - 1 && <Separator className="mx-4" />}
+                  {index < menuItems.length - 1 && <div className="h-px bg-gray-50 mx-4" />}
                 </div>
               );
             })}
@@ -244,10 +249,10 @@ const ProfilePage = () => {
         </Card>
 
         {/* Logout button */}
-        <Button 
-          variant="destructive" 
-          onClick={handleLogout} 
-          className="w-full h-12 sm:h-14 text-base font-medium bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 shadow-lg hover:shadow-xl transition-all duration-200 rounded-2xl"
+        <Button
+          variant="ghost"
+          onClick={handleLogout}
+          className="w-full h-14 text-base font-bold bg-gray-100 hover:bg-red-50 text-gray-500 hover:text-red-500 rounded-[1.5rem] transition-all duration-200 mb-6"
         >
           <LogOut className="w-5 h-5 mr-2" />
           退出登录

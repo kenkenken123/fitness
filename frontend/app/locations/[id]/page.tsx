@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import axios from 'axios';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Plus, Edit, Trash2, Dumbbell, Camera, ArrowLeft, Settings, BarChart3 } from "lucide-react";
 import { EquipmentDialog } from '@/components/EquipmentDialog';
@@ -72,6 +73,7 @@ const EnvironmentManagementPage = () => {
   const [isDialogOpen, setDialogOpen] = useState(false);
   const [isAiDialogOpen, setAiDialogOpen] = useState(false);
   const [selectedEquipment, setSelectedEquipment] = useState<Equipment | null>(null);
+  const [isSelectionDialogOpen, setSelectionDialogOpen] = useState(false);
   const { user, isLoading: isAuthLoading } = useAuth();
 
   const fetchEnvironmentDetails = async () => {
@@ -139,185 +141,194 @@ const EnvironmentManagementPage = () => {
   return (
     <>
       <style jsx>{styles}</style>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pb-20">
-      {/* Header Section */}
-      <div className="relative overflow-hidden">
-        <div className="bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 text-white p-4 sm:p-6 pb-8">
-          {/* Back Button */}
-          <div className="flex items-center justify-between mb-4 sm:mb-6">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => router.back()}
-              className="text-white hover:bg-white/20 p-2 rounded-full"
-            >
-              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-white hover:bg-white/20 p-2 rounded-full"
-            >
-              <Settings className="w-4 h-4 sm:w-5 sm:h-5" />
-            </Button>
-          </div>
-          
-          {/* Environment Info */}
-          <div className="flex items-center justify-between mb-4 sm:mb-6">
-            <div className="flex-1 min-w-0">
-              <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2 truncate">{environment.name}</h1>
-              <p className="text-blue-100 text-xs sm:text-sm">管理您的训练器材</p>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pb-28">
+        {/* Header Section */}
+        <div className="relative overflow-hidden">
+          <div className="bg-candy-mint/30 px-4 pb-8 pt-[calc(env(safe-area-inset-top)+1rem)] sm:p-6 sticky top-0 z-10 rounded-b-[3rem]">
+            {/* Back Button */}
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => router.back()}
+                className="bg-white hover:bg-white/80 text-teal-700 p-2 rounded-full shadow-sm"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="bg-white hover:bg-white/80 text-teal-700 p-2 rounded-full shadow-sm"
+              >
+                <Settings className="w-5 h-5" />
+              </Button>
             </div>
-            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg ml-3">
-              <Dumbbell className="w-6 h-6 sm:w-8 sm:h-8" />
+
+
+
+            {/* Environment Info */}
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <div className="flex-1 min-w-0">
+                <h1 className="text-2xl sm:text-3xl font-black text-gray-800 mb-1 sm:mb-2 truncate">{environment.name}</h1>
+                <p className="text-teal-700 font-bold text-xs sm:text-sm">管理您的训练器材 🛠️</p>
+              </div>
+              <div
+                className="w-16 h-16 bg-white rounded-[1.5rem] flex items-center justify-center shadow-lg ml-3 rotate-3 transform hover:rotate-6 transition-transform cursor-pointer hover:scale-105 active:scale-95"
+                onClick={() => setSelectionDialogOpen(true)}
+              >
+                <div className="bg-candy-yellow rounded-xl p-2">
+                  <Dumbbell className="w-8 h-8 text-orange-600" />
+                </div>
+              </div>
             </div>
-          </div>
-          
-          {/* Statistics */}
-          <div className="grid grid-cols-2 gap-4 sm:gap-6">
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 sm:p-4 text-center animate-fade-in-up" style={{animationDelay: '0.2s'}}>
-              <div className="text-2xl sm:text-3xl font-bold mb-1">{equipments.length}</div>
-              <div className="text-xs text-blue-100">器材数量</div>
-            </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 sm:p-4 text-center animate-fade-in-up" style={{animationDelay: '0.4s'}}>
-              <div className="text-2xl sm:text-3xl font-bold mb-1">{new Set(equipments.map(eq => eq.type)).size}</div>
-              <div className="text-xs text-blue-100">器材种类</div>
-            </div>
+
+
+
           </div>
         </div>
-        
-        {/* Decorative Elements */}
-        <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>
-        <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
-      </div>
 
-      {/* Content Section */}
-      <div className="px-4 sm:px-6 -mt-6 relative z-10">
-        <Card className="border-0 shadow-xl rounded-3xl overflow-hidden">
-          <CardHeader className="bg-white border-b border-gray-100 pb-4 sm:pb-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <Dumbbell className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                </div>
-                <div>
-                  <CardTitle className="text-lg sm:text-xl font-bold text-gray-800">器材列表</CardTitle>
-                  <p className="text-xs sm:text-sm text-gray-500">管理您的训练器材</p>
+        {/* Content Section */}
+        <div className="px-4 sm:px-6 -mt-6 relative z-10">
+          <Card className="border-0 shadow-sm rounded-[2.5rem] overflow-hidden bg-white/95 backdrop-blur-sm">
+            <CardHeader className="bg-white/50 border-b border-gray-50 pb-4 sm:pb-6 pt-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-candy-blue rounded-full flex items-center justify-center">
+                    <Dumbbell className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg sm:text-xl font-black text-gray-800">器材列表</CardTitle>
+                    <p className="text-xs sm:text-sm text-gray-400 font-bold">查看所有可用设备</p>
+                  </div>
                 </div>
               </div>
-              <div className="flex gap-2 sm:gap-3">
-                <Button 
-                  onClick={handleAiRecognition} 
-                  variant="outline" 
-                  size="sm"
-                  className="border-2 border-green-500 text-green-600 hover:bg-green-50 hover:border-green-600 transition-all duration-200 shadow-sm text-xs sm:text-sm"
-                >
-                  <Camera className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" /> AI识别
-                </Button>
-                <Button 
-                  onClick={handleAddEquipment} 
-                  size="sm"
-                  className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 text-xs sm:text-sm"
-                >
-                  <Plus className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" /> 添加器材
-                </Button>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="p-4 sm:p-6">
-            <div className="space-y-3 sm:space-y-4">
-              {equipments.map((eq, index) => (
-                <div 
-                  key={eq.id} 
-                  className="group flex items-center justify-between p-4 sm:p-5 bg-gradient-to-r from-gray-50 to-gray-100 rounded-2xl hover:from-blue-50 hover:to-purple-50 transition-all duration-300 border border-gray-200 hover:border-blue-200 hover:shadow-lg equipment-item"
-                  style={{ animationDelay: `${index * 150}ms` }}
-                >
-                  <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
-                    <div className="relative flex-shrink-0">
-                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-200">
-                        <Dumbbell className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                      </div>
-                      {eq.weight && (
-                        <div className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-orange-500 rounded-full flex items-center justify-center">
-                          <span className="text-xs text-white font-bold">{eq.weight}</span>
+            </CardHeader>
+            <CardContent className="p-4 sm:p-6 bg-white">
+              <div className="space-y-3 sm:space-y-4">
+                {equipments.map((eq, index) => (
+                  <div
+                    key={eq.id}
+                    className="group flex items-center justify-between p-4 sm:p-5 bg-gray-50 rounded-[1.5rem] hover:bg-candy-blue/10 transition-all duration-300 border-2 border-transparent hover:border-candy-blue/30 equipment-item"
+                    style={{ animationDelay: `${index * 100}ms` }}
+                  >
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+                      <div className="relative flex-shrink-0">
+                        <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform duration-200">
+                          <Dumbbell className="w-6 h-6 text-gray-400 group-hover:text-blue-500 transition-colors" />
                         </div>
-                      )}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <h4 className="font-semibold text-gray-800 text-base sm:text-lg mb-1 truncate">{eq.name}</h4>
-                      <div className="flex items-center gap-2 text-xs sm:text-sm">
-                        <span className="text-gray-500 truncate">{eq.type}</span>
-                        <span className="text-gray-300">•</span>
-                        <span className="text-gray-500 truncate">{eq.weight ? `${eq.weight} kg` : '无重量'}</span>
+                        {eq.weight && (
+                          <div className="absolute -top-1 -right-1 px-1.5 py-0.5 bg-candy-yellow text-orange-700 rounded-full flex items-center justify-center border-2 border-white">
+                            <span className="text-[10px] font-black">{eq.weight}kg</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-bold text-gray-800 text-base sm:text-lg mb-1 truncate">{eq.name}</h4>
+                        <div className="flex items-center gap-2 text-xs sm:text-sm">
+                          <span className="text-gray-500 font-medium truncate bg-white px-2 py-0.5 rounded-md">{eq.type}</span>
+                        </div>
                       </div>
                     </div>
+                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEditEquipment(eq)}
+                        className="bg-white hover:bg-blue-50 text-gray-400 hover:text-blue-500 rounded-xl w-8 h-8 p-0 border border-gray-100"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteEquipment(eq.id)}
+                        className="bg-white hover:bg-red-50 text-gray-400 hover:text-red-500 rounded-xl w-8 h-8 p-0 border border-gray-100"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex gap-1 sm:gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0">
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => handleEditEquipment(eq)}
-                      className="hover:bg-blue-100 hover:text-blue-600 rounded-xl p-2"
-                    >
-                      <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => handleDeleteEquipment(eq.id)}
-                      className="hover:bg-red-100 hover:text-red-600 rounded-xl p-2"
-                    >
-                      <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
-                    </Button>
+                ))}
+                {equipments.length === 0 && (
+                  <div className="text-center py-8 sm:py-12">
+                    <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <Dumbbell className="w-10 h-10 text-gray-300" />
+                    </div>
+                    <h3 className="text-lg font-bold text-gray-600 mb-2">暂无器材</h3>
+                    <p className="text-gray-400 mb-6 text-sm font-medium">这里空空如也，快添加一些器材吧！📦</p>
+                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                      <Button
+                        onClick={handleAiRecognition}
+                        variant="outline"
+                        size="sm"
+                        className="border-2 border-candy-mint text-teal-600 hover:bg-candy-mint/20 rounded-xl font-bold h-10"
+                      >
+                        <Camera className="mr-2 h-4 w-4" /> AI 拍照识别
+                      </Button>
+                      <Button
+                        onClick={handleAddEquipment}
+                        size="sm"
+                        className="bg-candy-blue hover:bg-blue-300 text-blue-900 rounded-xl font-bold h-10 shadow-sm"
+                      >
+                        <Plus className="mr-2 h-4 w-4" /> 手动添加
+                      </Button>
+                    </div>
                   </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div >
+
+        <Dialog open={isSelectionDialogOpen} onOpenChange={setSelectionDialogOpen}>
+          <DialogContent className="sm:max-w-md rounded-[2rem] border-0 bg-white/95 backdrop-blur-sm">
+            <DialogHeader>
+              <DialogTitle className="text-center text-xl font-black text-gray-800">添加新器材</DialogTitle>
+            </DialogHeader>
+            <div className="grid grid-cols-2 gap-4 py-6">
+              <button
+                onClick={() => {
+                  setSelectionDialogOpen(false);
+                  handleAiRecognition();
+                }}
+                className="flex flex-col items-center justify-center gap-3 p-6 rounded-[1.5rem] bg-candy-mint/20 hover:bg-candy-mint/40 transition-all duration-200 border-2 border-transparent hover:border-candy-mint group"
+              >
+                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+                  <Camera className="w-8 h-8 text-teal-600" />
                 </div>
-              ))}
-              {equipments.length === 0 && (
-                <div className="text-center py-8 sm:py-12">
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-gray-200 to-gray-300 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg">
-                    <Dumbbell className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" />
-                  </div>
-                  <h3 className="text-base sm:text-lg font-semibold text-gray-600 mb-2">暂无器材</h3>
-                  <p className="text-gray-500 mb-4 sm:mb-6 text-sm">开始添加您的第一个训练器材吧！</p>
-                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                    <Button 
-                      onClick={handleAiRecognition}
-                      variant="outline" 
-                      size="sm"
-                      className="border-green-500 text-green-600 hover:bg-green-50"
-                    >
-                      <Camera className="mr-2 h-4 w-4" /> AI识别添加
-                    </Button>
-                    <Button 
-                      onClick={handleAddEquipment}
-                      size="sm"
-                      className="bg-gradient-to-r from-blue-500 to-purple-600"
-                    >
-                      <Plus className="mr-2 h-4 w-4" /> 手动添加
-                    </Button>
-                  </div>
+                <span className="font-bold text-teal-800">📷 拍照识别</span>
+              </button>
+              <button
+                onClick={() => {
+                  setSelectionDialogOpen(false);
+                  handleAddEquipment();
+                }}
+                className="flex flex-col items-center justify-center gap-3 p-6 rounded-[1.5rem] bg-candy-pink/20 hover:bg-candy-pink/40 transition-all duration-200 border-2 border-transparent hover:border-candy-pink group"
+              >
+                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+                  <Plus className="w-8 h-8 text-pink-600" />
                 </div>
-              )}
+                <span className="font-bold text-pink-800">➕ 手动添加</span>
+              </button>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </DialogContent>
+        </Dialog>
 
-      <EquipmentDialog
-        open={isDialogOpen}
-        onOpenChange={setDialogOpen}
-        onSuccess={fetchEnvironmentDetails}
-        equipment={selectedEquipment}
-        environmentId={environment.id}
-      />
+        <EquipmentDialog
+          open={isDialogOpen}
+          onOpenChange={setDialogOpen}
+          onSuccess={fetchEnvironmentDetails}
+          equipment={selectedEquipment}
+          environmentId={environment.id}
+        />
 
-      <AiEquipmentRecognitionDialog
-        open={isAiDialogOpen}
-        onOpenChange={setAiDialogOpen}
-        onSuccess={fetchEnvironmentDetails}
-        environmentId={environment.id}
-      />
-    </div>
+        <AiEquipmentRecognitionDialog
+          open={isAiDialogOpen}
+          onOpenChange={setAiDialogOpen}
+          onSuccess={fetchEnvironmentDetails}
+          environmentId={environment.id}
+        />
+      </div >
     </>
   );
 };

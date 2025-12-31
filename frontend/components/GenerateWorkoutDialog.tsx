@@ -20,9 +20,10 @@ interface GenerateWorkoutDialogProps {
   onOpenChange: (open: boolean) => void;
   onSuccess: (newWorkoutLog: any) => void;
   userId: number; // Assuming you have the user's ID
+  initialFocus?: string;
 }
 
-export const GenerateWorkoutDialog = ({ open, onOpenChange, onSuccess, userId }: GenerateWorkoutDialogProps) => {
+export const GenerateWorkoutDialog = ({ open, onOpenChange, onSuccess, userId, initialFocus }: GenerateWorkoutDialogProps) => {
   const [environments, setEnvironments] = useState<TrainingEnvironment[]>([]);
   const [selectedEnvironment, setSelectedEnvironment] = useState<string | undefined>(undefined);
   const [trainingFocus, setTrainingFocus] = useState<string>('');
@@ -30,6 +31,12 @@ export const GenerateWorkoutDialog = ({ open, onOpenChange, onSuccess, userId }:
 
   useEffect(() => {
     if (open) {
+      if (initialFocus) {
+        setTrainingFocus(initialFocus === 'Strength' ? '全身力量训练' : initialFocus === 'Cardio' ? '有氧燃脂训练' : initialFocus);
+      } else {
+        setTrainingFocus('');
+      }
+
       const fetchEnvironments = async () => {
         try {
           const data = await getTrainingEnvironmentsByUserId(userId);
@@ -40,7 +47,7 @@ export const GenerateWorkoutDialog = ({ open, onOpenChange, onSuccess, userId }:
       };
       fetchEnvironments();
     }
-  }, [open]);
+  }, [open, initialFocus]);
 
   const handleGenerate = async () => {
     if (!selectedEnvironment) return;
@@ -69,7 +76,7 @@ export const GenerateWorkoutDialog = ({ open, onOpenChange, onSuccess, userId }:
         </DialogHeader>
         <div className="py-4 space-y-4">
           <p className="text-sm text-gray-600">请选择一个训练环境，AI将根据该环境的可用器材为您量身定制一套训练计划。</p>
-          
+
           <div>
             <Label className="mb-2 block">训练环境</Label>
             <Select onValueChange={setSelectedEnvironment} value={selectedEnvironment}>

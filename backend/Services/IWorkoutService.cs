@@ -2,16 +2,10 @@ using backend.DTOs;
 
 namespace backend.Services
 {
+    // 简化的接口，只保留 Dashboard 相关功能
     public interface IWorkoutService
     {
-        Task<List<WorkoutDto>> GetUserWorkoutsAsync(int userId);
-        Task<List<WorkoutDto>> GetRecentWorkoutsAsync(int userId, int limit = 10);
-        Task<WorkoutDto?> GetWorkoutByIdAsync(int id);
-        Task<WorkoutDto> CreateWorkoutAsync(CreateWorkoutDto workoutDto, int userId);
-        Task<WorkoutDto?> UpdateWorkoutAsync(int id, UpdateWorkoutDto workoutDto);
-        Task<bool> DeleteWorkoutAsync(int id);
         Task<UserDashboardDto> GetUserDashboardAsync(int userId);
-        Task<UserStatisticsDto> GetUserStatisticsAsync(int userId, string period = "all");
     }
 
     public class UserDashboardDto
@@ -51,12 +45,12 @@ namespace backend.Services
         public string? EnvironmentName { get; set; }
     }
 
-    public class UserStatisticsDto
+    public class AchievementDto
     {
-        public int TotalWorkouts { get; set; }
-        public int TotalCalories { get; set; }
-        public int TotalDuration { get; set; }
-        public int LongestStreak { get; set; }
-        public int CurrentStreak { get; set; }
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Icon { get; set; } = string.Empty;
+        public string Type { get; set; } = string.Empty;
+        public DateTime EarnedDate { get; set; }
     }
 }
