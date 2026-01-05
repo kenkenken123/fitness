@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from 'next/navigation'
+import Image from "next/image"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -27,7 +28,7 @@ interface TrainingEnvironment {
   equipmentIds: number[];
 }
 
-const TrainingPage = () => {
+const TrainingContent = () => {
   const [logs, setLogs] = useState<WorkoutLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerateDialogOpen, setGenerateDialogOpen] = useState(false);
@@ -343,10 +344,8 @@ const TrainingPage = () => {
         <div className="bg-candy-mint/30 px-4 pb-8 pt-[calc(env(safe-area-inset-top)+1rem)] sm:p-6 sticky top-0 z-10 rounded-b-[3rem]">
           <div className="flex items-center justify-between mb-4 sm:mb-6">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm">
-                <div className="bg-candy-yellow rounded-full p-2">
-                  <Dumbbell className="w-5 h-5 text-orange-600" />
-                </div>
+              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm border-2 border-candy-yellow overflow-hidden">
+                <Image src="/icons/icon_clipboard_cute.png" alt="History" width={48} height={48} className="object-cover" />
               </div>
               <div>
                 <h1 className="text-2xl font-black text-gray-800">训练历史</h1>
@@ -375,8 +374,8 @@ const TrainingPage = () => {
           </div>
         ) : logs.length === 0 ? (
           <div className="text-center py-12 sm:py-16">
-            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Dumbbell className="w-10 h-10 text-gray-300" />
+            <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm border-2 border-gray-100 p-4">
+              <Image src="/icons/icon_dumbbell_cute.png" alt="No Data" width={64} height={64} className="object-contain opacity-50 grayscale" />
             </div>
             <h3 className="text-lg font-bold text-gray-600 mb-2">还没有训练记录</h3>
             <p className="text-gray-400 text-sm font-medium">点击右下角按钮，让AI为你生成第一个训练计划吧！✨</p>
@@ -425,16 +424,20 @@ const TrainingPage = () => {
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 mb-4">
-                  <div className="bg-candy-blue/10 rounded-2xl p-3 border border-candy-blue/20 text-center">
+                  <div className="bg-candy-blue/10 rounded-2xl p-3 border border-candy-blue/20 text-center relative overflow-hidden">
                     <div className="flex items-center justify-center gap-1 mb-1 text-blue-400">
-                      <Clock className="w-3 h-3" />
+                      <div className="w-5 h-5 relative">
+                        <Image src="/icons/icon_clock_cute.png" alt="Time" fill className="object-contain" />
+                      </div>
                       <span className="text-xs font-bold">时长</span>
                     </div>
                     <span className="text-base font-black text-blue-900">{log.estimatedDuration}m</span>
                   </div>
-                  <div className="bg-candy-pink/10 rounded-2xl p-3 border border-candy-pink/20 text-center">
+                  <div className="bg-candy-pink/10 rounded-2xl p-3 border border-candy-pink/20 text-center relative overflow-hidden">
                     <div className="flex items-center justify-center gap-1 mb-1 text-pink-400">
-                      <Flame className="w-3 h-3" />
+                      <div className="w-5 h-5 relative">
+                        <Image src="/icons/icon_fire_cute.png" alt="Calories" fill className="object-contain" />
+                      </div>
                       <span className="text-xs font-bold">热量</span>
                     </div>
                     <span className="text-base font-black text-pink-900">{log.estimatedCalories}</span>
@@ -515,9 +518,11 @@ const TrainingPage = () => {
       {/* Add Button */}
       <Button
         onClick={() => setGenerateDialogOpen(true)}
-        className="fixed bottom-24 right-6 w-16 h-16 rounded-full bg-candy-pink hover:bg-pink-400 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 border-4 border-white"
+        className="fixed bottom-24 right-6 w-16 h-16 rounded-full bg-transparent p-0 flex items-center justify-center z-50 hover:scale-110 transition-transform duration-300"
       >
-        <Plus className="w-8 h-8" />
+        <div className="relative w-full h-full drop-shadow-xl filter">
+          <Image src="/icons/icon_plus_cute.png" alt="Add" fill className="object-contain" />
+        </div>
       </Button>
 
       <GenerateWorkoutDialog
@@ -777,5 +782,19 @@ const TrainingPage = () => {
   )
 }
 
-export default TrainingPage
+const TrainingPage = () => {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-400 font-bold">准备中...</p>
+        </div>
+      </div>
+    }>
+      <TrainingContent />
+    </Suspense>
+  )
+}
 
+export default TrainingPage

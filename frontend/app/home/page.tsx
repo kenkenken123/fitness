@@ -136,7 +136,7 @@ const Home = () => {
             </div>
             <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-lg ml-3 ring-4 ring-white/50 rotate-6 hover:rotate-12 transition-transform duration-300">
               <div className="rounded-full p-2 w-full h-full flex items-center justify-center overflow-hidden">
-                <Image src="/icons/logo_muscle_duck.png" alt="Fitness Duck Logo" width={70} height={70} className="object-contain" />
+                <Image src="/icons/logo_muscle_duck_v2.png" alt="Fitness Duck Logo" width={70} height={70} className="object-contain" />
               </div>
             </div>
           </div>

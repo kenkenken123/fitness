@@ -111,9 +111,9 @@ const ProfilePage = () => {
           <div className="flex items-center gap-4 mb-6">
             <div className="relative">
               <Avatar className="w-20 h-20 sm:w-24 sm:h-24 border-4 border-white shadow-md ring-4 ring-candy-lavender/30 bg-white">
-                <AvatarImage src={profile.avatar || "/icons/logo_muscle_duck.png"} className="object-cover" />
+                <AvatarImage src={profile.avatar || "/icons/logo_muscle_duck_v2.png"} className="object-cover" />
                 <AvatarFallback className="bg-white p-2">
-                  <img src="/icons/logo_muscle_duck.png" alt="Default Avatar" className="w-full h-full object-contain" />
+                  <img src="/icons/logo_muscle_duck_v2.png" alt="Default Avatar" className="w-full h-full object-contain" />
                 </AvatarFallback>
               </Avatar>
               <div className="absolute -bottom-2 -right-2 bg-candy-yellow text-orange-700 text-xs font-bold px-2 py-1 rounded-full border-2 border-white shadow-sm flex items-center gap-1">
