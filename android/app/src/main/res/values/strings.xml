@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Fitness</string>
+    <string name="web_base_url">https://your-site.example.com</string>
+</resources>
