@@ -6,8 +6,14 @@ name: .NET
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - "backend/**"
+      - ".github/workflows/dotnet.yml"
   pull_request:
     branches: [ "main" ]
+    paths:
+      - "backend/**"
+      - ".github/workflows/dotnet.yml"
 
 jobs:
   build:
@@ -21,8 +27,11 @@ jobs:
       with:
         dotnet-version: 8.0.x
     - name: Restore dependencies
-      run: dotnet restore
+      working-directory: backend
+      run: dotnet restore Fitness.sln
     - name: Build
-      run: dotnet build --no-restore
+      working-directory: backend
+      run: dotnet build Fitness.sln --no-restore
     - name: Test
-      run: dotnet test --no-build --verbosity normal
+      working-directory: backend
+      run: dotnet test Fitness.sln --no-build --verbosity normal
