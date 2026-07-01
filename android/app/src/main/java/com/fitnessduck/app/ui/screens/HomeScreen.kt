@@ -4,9 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -252,7 +253,7 @@ fun HomeScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text("查看全部", fontSize = 11.sp, color = CandyBlueDark, fontWeight = FontWeight.Bold)
-                                Icon(Icons.Default.ChevronRight, contentDescription = null, tint = CandyBlueDark, modifier = Modifier.size(14.dp))
+                                Icon(Icons.Default.KeyboardArrowRight, contentDescription = null, tint = CandyBlueDark, modifier = Modifier.size(14.dp))
                             }
                         }
                         
